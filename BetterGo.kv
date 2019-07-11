@@ -1,0 +1,17 @@
+<MenuScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            text: 'Start new local game'
+            on_release: root.handle_click('new_game_please')
+
+<GameScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Image:
+            source: 'assets/Blank_Go_board.png'
+            size: 1000, 1000
+        Button:
+            text: 'Go back to menu'
+            size_hint_y: None
+            on_release: root.handle_click('back_to_menu')
