@@ -1,7 +1,7 @@
 import random
 from dlgo.agent.base import Agent
 from dlgo.agent.helpers import is_point_an_eye
-from dlgo.goboard_slow import Move
+from dlgo.goboard import Move
 from dlgo.gotypes import Point
 
 
@@ -15,7 +15,7 @@ class RandomBot(Agent):
                 if game_state.is_valid_move(Move.play(candidate)) and \
                     not is_point_an_eye(game_state.board,
                                         candidate,
-                                        game_state.next_player):
+                                        game_state.next_Color):
                     candidates.append(candidate)
 
         if not candidates:

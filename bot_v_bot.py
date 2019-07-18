@@ -9,8 +9,8 @@ def main():
     board_size = 9
     game = goboard.GameState.new_game(board_size)
     bots = {
-        gotypes.Player.black: naive.RandomBot(),
-        gotypes.Player.white: naive.RandomBot()
+        gotypes.Color.black: naive.RandomBot(),
+        gotypes.Color.white: naive.RandomBot()
     }
 
     while not game.is_over():
@@ -18,8 +18,8 @@ def main():
 
         print(chr(27) + "[2J")
         print_board(game.board)
-        bot_move = bots[game.next_player].select_move(game)
-        print_move(game.next_player, bot_move)
+        bot_move = bots[game.next_color].select_move(game)
+        print_move(game.next_color, bot_move)
         game = game.apply_move(bot_move)
 
 
