@@ -2,12 +2,13 @@ from dlgo.agent import naive
 from dlgo import goboard
 from dlgo import gotypes
 from dlgo.utils import print_move, print_board, point_from_coords
+from dlgo.rules import get_ai_rule_set
 from six.moves import input
 
 
 def main():
     board_size = 9
-    game = goboard.GameState.new_game(board_size)
+    game = goboard.GameState.new_game(board_size, get_ai_rule_set())
     bot = naive.RandomBot()
 
     while not game.is_over():

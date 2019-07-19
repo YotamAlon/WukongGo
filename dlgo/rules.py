@@ -5,34 +5,52 @@ class Rule:
     def __init__(self):
         pass
 
-    def is_legal(self, game_state, player, move):
+    @staticmethod
+    def is_valid_move(game_state, color, move):
         raise NotImplementedError
 
-    def basic_checks(self, player, move):
+
+class BasicRule(Rule):
+    # should always be the first rule in any RuleSet
+    @staticmethod
+    def is_valid_move(game_state, color, move):
         if not move.is_play:
             return True
-        if player.color is None:
+        if color is None:
             return False
-        return None
+        if game_state.board.get(move.point) is not None:
+            return False
+        return True
 
 
 class SuperKoRule(Rule):
-    def is_legal(self, game_state, player, move):
-        result = self.basic_checks(player, move)
-        if result is not None:
-            return result
+    @staticmethod
+    def is_valid_move(game_state, color, move):
         next_board = copy.deepcopy(game_state.board)
-        next_board.place_stone(player.color, move.point)
-        next_situation = (player.color.other, next_board.zobrist_hash())
+        next_board.place_stone(color, move.point)
+        next_situation = (color.other, next_board.zobrist_hash())
         return next_situation not in game_state.previous_states
 
 
-class SuicideRule(Rule):
-    def is_legal(self, game_state, player, move):
-        result = self.basic_checks(player, move)
-        if result is not None:
-            return result
+class SelfCaptureRule(Rule):
+    @staticmethod
+    def is_valid_move(game_state, color, move):
         next_board = copy.deepcopy(game_state.board)
-        next_board.place_stone(player.color, move.point)
+        next_board.place_stone(color, move.point)
         new_group = next_board.get_go_group(move.point)
         return new_group.num_liberties != 0
+
+
+class RuleSet:
+    def __init__(self, *rules):
+        self.rules = [BasicRule] + [*rules]
+
+    def is_valid_move(self, game_state, color, move):
+        for rule in self.rules:
+            if not rule.is_valid_move(game_state, color, move):
+                return False
+        return True
+
+
+def get_ai_rule_set():
+    return RuleSet(SelfCaptureRule, SuperKoRule)

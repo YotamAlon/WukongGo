@@ -131,7 +131,7 @@ class Board:
                 if neighbor_group is None:
                     continue
                 if neighbor_group is not group:
-                    neighbor_group.add_liberty(point)
+                    neighbor_group.with_liberty(point)
             self._grid[point] = None
 
             self._hash ^= zobrist.HASH_CODE[point, group.color]
@@ -141,10 +141,11 @@ class Board:
 
 
 class GameState:
-    def __init__(self, board, next_color, previous, move):
+    def __init__(self, board, rule_set, next_color, previous, move):
         self.board = board
         self.next_color = next_color
         self.previous_state = previous
+        self.rule_set = rule_set
         if self.previous_state is None:
             self.previous_states = frozenset()
         else:
@@ -160,14 +161,14 @@ class GameState:
             next_board.place_stone(self.next_color, move.point)
         else:
             next_board = self.board
-        return GameState(next_board, self.next_color.other, self, move)
+        return GameState(next_board, self.rule_set, self.next_color.other, self, move)
 
     @classmethod
-    def new_game(cls, board_size):
+    def new_game(cls, board_size, rule_set):
         if isinstance(board_size, int):
             board_size = (board_size, board_size)
             board = Board(*board_size)
-            return GameState(board, Color.black, None, None)
+            return GameState(board, rule_set, Color.black, None, None)
 
     def is_over(self):
         if self.last_move is None:
@@ -179,38 +180,9 @@ class GameState:
             return False
         return self.last_move.is_pass and second_last_move.is_pass
 
-    def is_move_self_capture(self, color, move):
-        """
-        note - this is illegal in most game rule sets, but not in chinese.
-        """
-        if not move.is_play:
-            return False
-        next_board = copy.deepcopy(self.board)
-        next_board.place_stone(color, move.point)
-        new_group = next_board.get_go_group(move.point)
-        return new_group.num_liberties == 0
-
     @property
     def situation(self):
         return self.next_color, self.board
 
-    def does_move_violate_ko(self, color, move):
-        """
-        note - superko is implemented, some rule sets might declare a tie on superko, instead of this.
-        """
-        if not move.is_play:
-            return False
-        next_board = copy.deepcopy(self.board)
-        next_board.place_stone(color, move.point)
-        next_situation = (color.other, next_board.zobrist_hash())
-        return next_situation in self.previous_states
-
     def is_valid_move(self, move):
-        if self.is_over():
-            return False
-        if move.is_resign or move.is_pass:
-            return True
-        return (
-            self.board.get(move.point) is None and
-            not self.is_move_self_capture(self.next_color, move) and
-            not self.does_move_violate_ko(self.next_color, move))
+        return self.rule_set.is_valid_move(game_state=self, color=self.next_color, move=move)

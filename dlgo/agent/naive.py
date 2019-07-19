@@ -15,7 +15,7 @@ class RandomBot(Agent):
                 if game_state.is_valid_move(Move.play(candidate)) and \
                     not is_point_an_eye(game_state.board,
                                         candidate,
-                                        game_state.next_Color):
+                                        game_state.next_color):
                     candidates.append(candidate)
 
         if not candidates:
