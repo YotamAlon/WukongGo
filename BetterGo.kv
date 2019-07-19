@@ -5,12 +5,34 @@
             text: 'Start new local game'
             on_release: root.handle_click('new_game_please')
 
+
+<Piece>:
+    background_color: 0, 0, 0, 0
+    canvas.before:
+        BorderImage:
+            source: root.img
+            pos: self.pos
+            size: self.size
+
+
+<GameBoard>:
+    canvas.before:
+        BorderImage:
+            source: 'assets/Blank_Go_board.png'
+            pos: self.pos
+            size: self.size
+
+    cols: root.board_size
+    rows: root.board_size
+    orientation: 'vertical'
+
+
 <GameScreen>:
+    board: board_id
     BoxLayout:
         orientation: 'vertical'
-        Image:
-            source: 'assets/Blank_Go_board.png'
-            size: 1000, 1000
+        GameBoard:
+            id: board_id
         Button:
             text: 'Go back to menu'
             size_hint_y: None
