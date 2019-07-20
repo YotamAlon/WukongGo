@@ -105,13 +105,21 @@ class Board:
             else:
                 self._remove_group(other_color_group)
 
-        for other_color_group in adjacent_opposite_color:
-            if other_color_group.num_liberties == 0:
-                self._remove_group(other_color_group)
-
     def _replace_group(self, new_group):
         for point in new_group.stones:
             self._grid[point] = new_group
+
+    def _remove_group(self, group):
+        for point in group.stones:
+            for neighbor in point.neighbors():
+                neighbor_group = self._grid.get(neighbor)
+                if neighbor_group is None:
+                    continue
+                if neighbor_group is not group:
+                    self._replace_group(neighbor_group.with_liberty(point))
+            self._grid[point] = None
+
+            self._hash ^= zobrist.HASH_CODE[point, group.color]
 
     def is_on_grid(self, point):
         return 1 <= point.row <= self.num_rows and \
@@ -121,20 +129,11 @@ class Board:
         group = self._grid.get(point)
         return None if group is None else group.color
 
+    def get_grid(self):
+        return [(point, self.get(point)) for point in self._grid]
+
     def get_go_group(self, point):
         return self._grid.get(point)
-
-    def _remove_group(self, group):
-        for point in group.stones:
-            for neighbor in point.neighbors():
-                neighbor_group = self._grid.get(neighbor)
-                if neighbor_group is None:
-                    continue
-                if neighbor_group is not group:
-                    neighbor_group.with_liberty(point)
-            self._grid[point] = None
-
-            self._hash ^= zobrist.HASH_CODE[point, group.color]
 
     def zobrist_hash(self):
         return self._hash
