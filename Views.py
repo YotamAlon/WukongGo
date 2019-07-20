@@ -39,10 +39,10 @@ class GameBoard(GridLayout):
     def make_move(self, move):
         if self.current_player == 'black':
             self.current_player = 'white'
-            return 'white'
+            return 'black'
         else:
             self.current_player = 'black'
-            return 'black'
+            return 'white'
 
 
 class GameScreen(Screen):
