@@ -3,7 +3,7 @@ from dlgo.gotypes import Point
 
 def is_point_an_eye(board, point, color):
     """
-    note - not completely accurate. fails to notice the two eye, two string setting.
+    note - not completely accurate. fails to notice the two eye, two group setting.
     """
     if board.get(point) is not None:
         return False
