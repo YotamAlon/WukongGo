@@ -1,12 +1,13 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.button import Button
-from kivy.properties import NumericProperty, StringProperty, ObjectProperty
+from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty
 from kivy.uix.gridlayout import GridLayout
 
 
 class Piece(Button):
-    index = NumericProperty(None)
-    img = StringProperty(None)
+    index = ListProperty(None)
+    img = StringProperty('assets/blank.png')
+    board_size = NumericProperty(None)
 
     def place_piece(self, color):
         self.img = 'assets/' + color + '.png'
@@ -23,13 +24,14 @@ class MenuScreen(Screen):
 
 
 class GameBoard(GridLayout):
-    board_size = NumericProperty(19)
+    board_size = NumericProperty(9)
     current_player = StringProperty('black')
 
     def __init__(self, **kwargs):
         super(GameBoard, self).__init__(**kwargs)
-        for i in range(self.board_size ** 2):
-            self.add_widget(Piece(index=i))
+        for i in range(self.board_size):
+            for j in range(self.board_size):
+                self.add_widget(Piece(index=[i, j], board_size=self.board_size))
 
     def is_move_legal(self, index):
         return True

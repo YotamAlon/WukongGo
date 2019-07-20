@@ -13,12 +13,21 @@
             source: root.img
             pos: self.pos
             size: self.size
+    canvas:
+        Color:
+            rgb: 0, 0, 0
+        Line:
+            id: horizontal_line
+            points: (root.pos[0] + (root.size[0] / 2) if root.index[1] == 0 else root.pos[0], root.pos[1] + (root.size[1] / 2), root.pos[0] + (root.size[0] / 2) if root.index[1] == root.board_size - 1 else root.pos[0] + root.size[0], root.pos[1] + (root.size[1] / 2))
+        Line:
+            id: vertical_line
+            points: (root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == root.board_size - 1 else root.pos[1], root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == 0 else root.pos[1] + root.size[1])
 
 
 <GameBoard>:
     canvas.before:
         BorderImage:
-            source: 'assets/Blank_Go_board.png'
+            source: 'assets/board.png'
             pos: self.pos
             size: self.size
 
@@ -31,8 +40,13 @@
     board: board_id
     BoxLayout:
         orientation: 'vertical'
-        GameBoard:
-            id: board_id
+        BoxLayout:
+            RelativeLayout:
+                size_hint: None, None
+                size: min(self.parent.size), min(self.parent.size)
+                pos: self.parent.pos[0] + ((self.parent.size[0] - self.size[0]) / 2), self.pos[1]
+                GameBoard:
+                    id: board_id
         Button:
             text: 'Go back to menu'
             size_hint_y: None
