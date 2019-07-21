@@ -27,11 +27,6 @@ class Piece(Button):
             print("illegal move: ", point)
 
 
-class MenuScreen(Screen):
-    def handle_click(self, signal):
-        self.manager.handle_click(signal)
-
-
 class GameBoard(GridLayout):
     def __init__(self, **kwargs):
         super(GameBoard, self).__init__(**kwargs)
