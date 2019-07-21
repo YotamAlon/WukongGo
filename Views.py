@@ -4,7 +4,7 @@ from kivy.properties import NumericProperty, StringProperty, ObjectProperty, Lis
 from kivy.uix.gridlayout import GridLayout
 from dlgo.gotypes import Point
 from dlgo.goboard import Move, GameState
-from dlgo.rules import get_ai_rule_set
+from dlgo.rules import get_ai_rule_set, get_japanese_rule_set
 
 
 class Piece(Button):
@@ -37,7 +37,7 @@ class GameBoard(GridLayout):
         super(GameBoard, self).__init__(**kwargs)
 
         self.board_size = 9
-        self.game_state = GameState.new_game(self.board_size, get_ai_rule_set())
+        self.game_state = GameState.new_game(self.board_size, get_japanese_rule_set())
         self.grid = {}
         for i in range(1, self.board_size + 1):
             for j in range(1, self.board_size + 1):

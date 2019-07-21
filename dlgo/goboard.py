@@ -186,7 +186,7 @@ class GameState:
 
     @property
     def situation(self):
-        return self.next_color, self.board
+        return self.next_color, self.board.zobrist_hash()
 
     def is_valid_move(self, move):
         return self.rule_set.is_valid_move(game_state=self, color=self.next_color, move=move)
