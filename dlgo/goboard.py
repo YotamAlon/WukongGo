@@ -1,5 +1,5 @@
 import copy
-from dlgo.gotypes import Color
+from dlgo.gotypes import Color, Score
 from dlgo import zobrist
 
 """
@@ -75,6 +75,7 @@ class Board:
         adjacent_same_color = []
         adjacent_opposite_color = []
         liberties = []
+        score = Score(0, 0)
 
         for neighbor in point.neighbors():
             if not self.is_on_grid(neighbor):
@@ -103,13 +104,15 @@ class Board:
             if replacement.num_liberties:
                 self._replace_group(other_color_group.without_liberty(point))
             else:
-                self._remove_group(other_color_group)
+                score += self._remove_group(other_color_group)
+        return score
 
     def _replace_group(self, new_group):
         for point in new_group.stones:
             self._grid[point] = new_group
 
     def _remove_group(self, group):
+        score = Score(score_dict={group.color.other: len(group.stones), group.color: 0})
         for point in group.stones:
             for neighbor in point.neighbors():
                 neighbor_group = self._grid.get(neighbor)
@@ -120,6 +123,7 @@ class Board:
             self._grid[point] = None
 
             self._hash ^= zobrist.HASH_CODE[point, group.color]
+        return score
 
     def is_on_grid(self, point):
         return 1 <= point.row <= self.num_rows and \
@@ -140,11 +144,12 @@ class Board:
 
 
 class GameState:
-    def __init__(self, board, rule_set, next_color, previous, move):
+    def __init__(self, board, rule_set, next_color, previous, move, score):
         self.board = board
         self.next_color = next_color
         self.previous_state = previous
         self.rule_set = rule_set
+        self.score = score
         if self.previous_state is None:
             self.previous_states = frozenset()
         else:
@@ -157,17 +162,17 @@ class GameState:
     def apply_move(self, move):
         if move.is_play:
             next_board = copy.deepcopy(self.board)
-            next_board.place_stone(self.next_color, move.point)
+            score = next_board.place_stone(self.next_color, move.point) + self.score
         else:
             next_board = self.board
-        return GameState(next_board, self.rule_set, self.next_color.other, self, move)
+        return GameState(next_board, self.rule_set, self.next_color.other, self, move, score)
 
     @classmethod
     def new_game(cls, board_size, rule_set):
         if isinstance(board_size, int):
             board_size = (board_size, board_size)
             board = Board(*board_size)
-            return GameState(board, rule_set, Color.black, None, None)
+            return GameState(board, rule_set, Color.black, None, None, rule_set.komi)
 
     def is_over(self):
         if self.last_move is None:

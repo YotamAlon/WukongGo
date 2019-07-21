@@ -22,9 +22,9 @@ class Piece(Button):
         point = Point(self.index[0], self.index[1])
         if self.parent.is_move_legal(point):
             self.parent.make_move(point)
-            print("legal move: ", point)
+            print("legal move:", point, "current score:", self.parent.game_state.score)
         else:
-            print("illegal move: ", point)
+            print("illegal move: ", point, "current score:", self.parent.game_state.score)
 
 
 class MenuScreen(Screen):
