@@ -2,8 +2,6 @@ from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from Views.Game import GameScreen
 from Views.Menu import MenuScreen
-from kivy.lang import Builder
-Builder.load_file("WukonGo.kv")
 
 
 class ScreenRouter(ScreenManager):

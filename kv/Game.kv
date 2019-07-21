@@ -1,11 +1,3 @@
-<MenuScreen>:
-    BoxLayout:
-        orientation: 'vertical'
-        Button:
-            text: 'Start new local game'
-            on_release: root.handle_click('new_game_please')
-
-
 <Piece>:
     background_color: 0, 0, 0, 0
     canvas.before:
@@ -49,7 +41,16 @@
                 pos: self.parent.pos[0] + ((self.parent.size[0] - self.size[0]) / 2), self.pos[1]
                 GameBoard:
                     id: board_id
-        Button:
-            text: 'Go back to menu'
-            size_hint_y: None
-            on_release: root.handle_click('back_to_menu')
+        BoxLayout:
+            Button:
+                text: 'Go back to menu'
+                size_hint_y: None
+                on_release: root.handle_click('back_to_menu')
+            Button:
+                text: 'Pass'
+                size_hint_y: None
+                on_release: root.board.make_move(None, is_pass=True)
+            Button:
+                text: 'Resign'
+                size_hint_y: None
+                on_release: root.board.make_move(None, is_pass=True)

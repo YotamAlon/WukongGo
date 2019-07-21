@@ -5,6 +5,8 @@ from kivy.uix.gridlayout import GridLayout
 from dlgo.gotypes import Point
 from dlgo.goboard import Move, GameState
 from dlgo.rules import get_ai_rule_set
+from kivy.lang import Builder
+Builder.load_file("kv/Game.kv")
 
 
 class Piece(Button):
@@ -19,9 +21,9 @@ class Piece(Button):
             self.img = 'assets/' + str(color) + '.png'
 
     def on_press(self):
-        point = Point(self.index[0], self.index[1])
+        point = Point(*self.index)
         if self.parent.is_move_legal(point):
-            self.parent.make_move(point)
+            self.parent.make_move(point=point)
             print("legal move: ", point)
         else:
             print("illegal move: ", point)
@@ -44,8 +46,8 @@ class GameBoard(GridLayout):
         move = Move.play(point)
         return self.game_state.is_valid_move(move)
 
-    def make_move(self, point):
-        move = Move.play(point)
+    def make_move(self, point=None, is_pass=False, is_resign=False):
+        move = Move(point, is_pass=is_pass, is_resign=is_resign)
         self.game_state = self.game_state.apply_move(move)
         for move in self.game_state.board.get_grid():
             self.grid[move[0]].place_piece(move[1])
