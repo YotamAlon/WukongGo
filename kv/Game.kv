@@ -1,3 +1,5 @@
+#:import ConfirmPopup Views.Fragments.ConfirmPopup
+
 <Piece>:
     background_color: 0, 0, 0, 0
     canvas.before:
@@ -32,8 +34,32 @@
 
 <GameScreen>:
     board: board_id
+    score_board: score_board_id
+    player_1_label: player_1_label_id
+    player_2_label: player_2_label_id
     BoxLayout:
         orientation: 'vertical'
+        BoxLayout:
+            canvas.before:
+                Color:
+                    rgba: 0.5, 0.5, 0.5, 1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            orientation: 'horizontal'
+            size_hint_y: None
+            Label:
+                id: player_1_label_id
+                text: 'Player 1'
+                color: 1, 0, 0, 1
+            Label:
+                id: score_board_id
+                text: root.board.score
+                color: 0, 1, 0, 1
+            Label:
+                id: player_2_label_id
+                text: 'Player 2'
+                color: 0, 0, 1, 1
         BoxLayout:
             RelativeLayout:
                 size_hint: None, None
@@ -42,6 +68,8 @@
                 GameBoard:
                     id: board_id
         BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
             Button:
                 text: 'Go back to menu'
                 size_hint_y: None
@@ -53,4 +81,5 @@
             Button:
                 text: 'Resign'
                 size_hint_y: None
-                on_release: root.board.make_move(None, is_pass=True)
+                on_release: self.popup.open()
+                popup: ConfirmPopup(title='Are you sure you want to resign?', text='This will cause you to lose.', callback=root.board.resign)

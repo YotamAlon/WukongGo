@@ -30,6 +30,8 @@ class Piece(Button):
 
 
 class GameBoard(GridLayout):
+    score = StringProperty('0 - 0')
+
     def __init__(self, **kwargs):
         super(GameBoard, self).__init__(**kwargs)
 
@@ -52,6 +54,11 @@ class GameBoard(GridLayout):
         for move in self.game_state.board.get_grid():
             self.grid[move[0]].place_piece(move[1])
         return None
+
+    def resign(self):
+        move = Move(is_resign=True)
+        self.game_state = self.game_state.apply_move(move)
+        print('you have resigned')
 
 
 class GameScreen(Screen):
