@@ -6,6 +6,7 @@ from dlgo.gotypes import Point
 from dlgo.goboard import Move, GameState
 from dlgo.rules import get_ai_rule_set
 from kivy.lang import Builder
+from Views.Fragments import NotifyPopup
 Builder.load_file("kv/Game.kv")
 
 
@@ -26,6 +27,7 @@ class Piece(Button):
             self.parent.make_move(point=point)
             print("legal move: ", point)
         else:
+            self.parent.show_illegal_move_popup(point)
             print("illegal move: ", point)
 
 
@@ -47,6 +49,10 @@ class GameBoard(GridLayout):
     def is_move_legal(self, point):
         move = Move.play(point)
         return self.game_state.is_valid_move(move)
+
+    def show_illegal_move_popup(self, point):
+        NotifyPopup(title='This is not a legal move!',
+                    text=f'the move {point[0]}, {point[1]} is not a legal move').open()
 
     def make_move(self, point=None, is_pass=False, is_resign=False):
         move = Move(point, is_pass=is_pass, is_resign=is_resign)

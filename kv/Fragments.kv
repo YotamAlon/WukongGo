@@ -13,3 +13,13 @@
             Button:
                 text: 'No'
                 on_release: root.answer(False)
+
+<NotifyPopup>:
+    size_hint: 0.5, 0.5
+    GridLayout:
+        cols:1
+        Label:
+            text: root.text
+        Button:
+            text: 'Ok'
+            on_release: root.ok()
