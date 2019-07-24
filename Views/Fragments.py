@@ -15,3 +15,13 @@ class ConfirmPopup(Popup):
         if confirmed:
             self.callback()
         self.dismiss()
+
+
+class NotifyPopup(Popup):
+    text = StringProperty()
+
+    def __init__(self, **kwargs):
+        super(NotifyPopup, self).__init__(**kwargs)
+
+    def ok(self):
+        self.dismiss()
