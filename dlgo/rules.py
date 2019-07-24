@@ -1,4 +1,5 @@
 import copy
+from dlgo.gotypes import Color, Score
 
 
 class Rule:
@@ -42,8 +43,9 @@ class SelfCaptureRule(Rule):
 
 
 class RuleSet:
-    def __init__(self, *rules):
+    def __init__(self, *rules, komi):
         self.rules = [BasicRule] + [*rules]
+        self.komi = komi
 
     def is_valid_move(self, game_state, color, move):
         for rule in self.rules:
@@ -53,4 +55,4 @@ class RuleSet:
 
 
 def get_ai_rule_set():
-    return RuleSet(SelfCaptureRule, SuperKoRule)
+    return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(score_dict={Color.white: 7.5, Color.black: 0}))

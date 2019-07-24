@@ -24,9 +24,9 @@ class Piece(Button):
         point = Point(*self.index)
         if self.parent.is_move_legal(point):
             self.parent.make_move(point=point)
-            print("legal move: ", point)
+            print("legal move:", point, "current score:", self.parent.game_state.score)
         else:
-            print("illegal move: ", point)
+            print("illegal move: ", point, "current score:", self.parent.game_state.score)
 
 
 class GameBoard(GridLayout):
