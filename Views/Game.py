@@ -10,6 +10,7 @@ from Views.Fragments import NotifyPopup
 Builder.load_file("kv/Game.kv")
 
 
+
 class Piece(Button):
     index = ListProperty(None)
     img = StringProperty('assets/blank.png')
@@ -27,6 +28,7 @@ class Piece(Button):
             self.parent.make_move(point=point)
             print("legal move:", point, "current score:", self.parent.game_state.score)
         else:
+
             self.parent.show_illegal_move_popup(point)
             print("illegal move: ", point, "current score:", self.parent.game_state.score)
 
