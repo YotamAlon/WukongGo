@@ -39,12 +39,20 @@ class GameBoard(GridLayout):
 
         self.board_size = 9
         self.game_state = GameState.new_game(self.board_size, get_japanese_rule_set())
+        self.update_score()
         self.grid = {}
         for i in range(1, self.board_size + 1):
             for j in range(1, self.board_size + 1):
                 point = Point(i, j)
                 self.grid[point] = Piece(index=point, board_size=self.board_size)
                 self.add_widget(self.grid[point])
+
+    def update_board(self):
+        for move in self.game_state.board.get_grid():
+            self.grid[move[0]].place_piece(move[1])
+
+    def update_score(self):
+        self.score = f'{self.game_state.score.black_score} - {self.game_state.score.white_score}'
 
     def is_move_legal(self, point):
         move = Move.play(point)
@@ -57,9 +65,8 @@ class GameBoard(GridLayout):
     def make_move(self, point=None, is_pass=False, is_resign=False):
         move = Move(point, is_pass=is_pass, is_resign=is_resign)
         self.game_state = self.game_state.apply_move(move)
-        for move in self.game_state.board.get_grid():
-            self.grid[move[0]].place_piece(move[1])
-        return None
+        self.update_board()
+        self.update_score()
 
     def resign(self):
         move = Move(is_resign=True)
