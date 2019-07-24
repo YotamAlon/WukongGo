@@ -4,7 +4,7 @@ from kivy.properties import NumericProperty, StringProperty, ObjectProperty, Lis
 from kivy.uix.gridlayout import GridLayout
 from dlgo.gotypes import Point
 from dlgo.goboard import Move, GameState
-from dlgo.rules import get_ai_rule_set
+from dlgo.rules import get_ai_rule_set, get_japanese_rule_set
 from kivy.lang import Builder
 from Views.Fragments import NotifyPopup
 Builder.load_file("kv/Game.kv")
@@ -25,10 +25,10 @@ class Piece(Button):
         point = Point(*self.index)
         if self.parent.is_move_legal(point):
             self.parent.make_move(point=point)
-            print("legal move: ", point)
+            print("legal move:", point, "current score:", self.parent.game_state.score)
         else:
             self.parent.show_illegal_move_popup(point)
-            print("illegal move: ", point)
+            print("illegal move: ", point, "current score:", self.parent.game_state.score)
 
 
 class GameBoard(GridLayout):
@@ -38,7 +38,7 @@ class GameBoard(GridLayout):
         super(GameBoard, self).__init__(**kwargs)
 
         self.board_size = 9
-        self.game_state = GameState.new_game(self.board_size, get_ai_rule_set())
+        self.game_state = GameState.new_game(self.board_size, get_japanese_rule_set())
         self.grid = {}
         for i in range(1, self.board_size + 1):
             for j in range(1, self.board_size + 1):

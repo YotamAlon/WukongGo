@@ -1,4 +1,5 @@
 import copy
+from dlgo.gotypes import Color, Score
 
 
 class Rule:
@@ -23,6 +24,17 @@ class BasicRule(Rule):
         return True
 
 
+class KoRule(Rule):
+    @staticmethod
+    def is_valid_move(game_state, color, move):
+        if game_state.previous_state is None:
+            return True
+        next_board = copy.deepcopy(game_state.board)
+        next_board.place_stone(color, move.point)
+        next_situation = (color.other, next_board.zobrist_hash())
+        return next_situation != game_state.previous_state.situation
+
+
 class SuperKoRule(Rule):
     @staticmethod
     def is_valid_move(game_state, color, move):
@@ -42,8 +54,9 @@ class SelfCaptureRule(Rule):
 
 
 class RuleSet:
-    def __init__(self, *rules):
+    def __init__(self, *rules, komi):
         self.rules = [BasicRule] + [*rules]
+        self.komi = komi
 
     def is_valid_move(self, game_state, color, move):
         for rule in self.rules:
@@ -53,4 +66,25 @@ class RuleSet:
 
 
 def get_ai_rule_set():
-    return RuleSet(SelfCaptureRule, SuperKoRule)
+    return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(score_dict={Color.white: 7.5, Color.black: 0}))
+
+
+def get_japanese_rule_set():
+    """
+    https://senseis.xmp.net/?JapaneseRules
+    """
+    return RuleSet(SelfCaptureRule, KoRule, komi=Score(score_dict={Color.white: 6.5, Color.black: 0}))
+
+
+def get_chinese_rule_set():
+    """
+    https://senseis.xmp.net/?ChineseRules
+    """
+    return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(score_dict={Color.white: 7.5, Color.black: 0}))
+
+
+def get_ign_rule_set():
+    """
+    https://senseis.xmp.net/?IngRules
+    """
+    return RuleSet(SuperKoRule, komi=Score(score_dict={Color.white: 7.5, Color.black: 0}))
