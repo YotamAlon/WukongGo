@@ -5,21 +5,19 @@
         app.controller.process_move(self.index)
     background_color: 0, 0, 0, 0
     canvas.before:
-        BorderImage:
-            source: root.img
-            pos: self.pos
-            size: self.size
-    canvas:
         Color:
-            rgb: 0, 0, 0
+            rgb: 0, 0, 0, 1
         Line:
             id: horizontal_line
             points: (root.pos[0] + (root.size[0] / 2) if root.index[1] == 1 else root.pos[0], root.pos[1] + (root.size[1] / 2), root.pos[0] + (root.size[0] / 2) if root.index[1] == root.board_size else root.pos[0] + root.size[0], root.pos[1] + (root.size[1] / 2))
         Line:
             id: vertical_line
             points: (root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == root.board_size else root.pos[1], root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == 1 else root.pos[1] + root.size[1])
-        Color:
-            rgb: 1, 1, 1
+    canvas:
+        BorderImage:
+            source: root.img
+            pos: self.pos
+            size: self.size
 
 
 <GameBoard>:
