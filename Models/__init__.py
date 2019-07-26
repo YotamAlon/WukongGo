@@ -1,3 +1,3 @@
-from peewee import Proxy
+from peewee import DatabaseProxy
 
-db = Proxy()
+db_proxy = DatabaseProxy()

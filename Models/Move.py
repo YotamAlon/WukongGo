@@ -1,7 +1,7 @@
 from peewee import Model, ForeignKeyField, CharField
 from Models.Board import Board
 from Models.Player import Player
-from Models import db
+from Models import db_proxy
 
 
 class Move(Model):
@@ -10,4 +10,4 @@ class Move(Model):
     point = CharField()
 
     class Meta:
-        database = db
+        database = db_proxy

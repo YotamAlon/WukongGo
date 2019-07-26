@@ -1,7 +1,7 @@
 from peewee import Model, ForeignKeyField, CharField
 from Models.User import User
 from Models.GoGame import GoGame
-from Models import db
+from Models import db_proxy
 
 
 class Player(Model):
@@ -10,4 +10,4 @@ class Player(Model):
     color = CharField()
 
     class Meta:
-        database = db
+        database = db_proxy

@@ -2,7 +2,7 @@ from peewee import Model, ForeignKeyField, ManyToManyField
 from Models.User import User
 from Models.Timer import Timer
 from Models.GoGame import GoGame
-from Models import db
+from Models import db_proxy
 
 
 class Game(Model):
@@ -11,4 +11,7 @@ class Game(Model):
     go_game = ForeignKeyField(GoGame, backref='game')
 
     class Meta:
-        database = db
+        database = db_proxy
+
+
+GameUser = Game.users.get_through_model()

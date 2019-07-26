@@ -1,9 +1,9 @@
 from peewee import Model, CharField
-from Models import db
+from Models import db_proxy
 
 
 class User(Model):
     token = CharField()
 
     class Meta:
-        database = db
+        database = db_proxy
