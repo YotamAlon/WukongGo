@@ -1,23 +1,22 @@
 #:import ConfirmPopup Views.Fragments.ConfirmPopup
 
 <Piece>:
+    on_press:
+        app.controller.process_move(self.index)
     background_color: 0, 0, 0, 0
     canvas.before:
-        BorderImage:
-            source: root.img
-            pos: self.pos
-            size: self.size
-    canvas:
         Color:
-            rgb: 0, 0, 0
+            rgb: 0, 0, 0, 1
         Line:
             id: horizontal_line
             points: (root.pos[0] + (root.size[0] / 2) if root.index[1] == 1 else root.pos[0], root.pos[1] + (root.size[1] / 2), root.pos[0] + (root.size[0] / 2) if root.index[1] == root.board_size else root.pos[0] + root.size[0], root.pos[1] + (root.size[1] / 2))
         Line:
             id: vertical_line
             points: (root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == root.board_size else root.pos[1], root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == 1 else root.pos[1] + root.size[1])
-        Color:
-            rgb: 1, 1, 1
+    Image:
+        source: root.img
+        pos: root.pos
+        size: root.size
 
 
 <GameBoard>:
@@ -33,7 +32,7 @@
 
 
 <GameScreen>:
-    board: board_id
+    board_container: board_container
     score_board: score_board_id
     player_1_label: player_1_label_id
     player_2_label: player_2_label_id
@@ -54,7 +53,7 @@
                 color: 1, 0, 0, 1
             Label:
                 id: score_board_id
-                text: root.board.score
+                text: root.score
                 color: 0, 1, 0, 1
             Label:
                 id: player_2_label_id
@@ -62,11 +61,10 @@
                 color: 0, 0, 1, 1
         BoxLayout:
             RelativeLayout:
+                id: board_container
                 size_hint: None, None
                 size: min(self.parent.size), min(self.parent.size)
                 pos: self.parent.pos[0] + ((self.parent.size[0] - self.size[0]) / 2), self.pos[1]
-                GameBoard:
-                    id: board_id
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
@@ -77,9 +75,9 @@
             Button:
                 text: 'Pass'
                 size_hint_y: None
-                on_release: root.board.make_move(None, is_pass=True)
+                on_release: app.controller.pass_turn()
             Button:
                 text: 'Resign'
                 size_hint_y: None
                 on_release: self.popup.open()
-                popup: ConfirmPopup(title='Are you sure you want to resign?', text='This will cause you to lose.', callback=root.board.resign)
+                popup: ConfirmPopup(title='Are you sure you want to resign?', text='This will cause you to lose.', callback=app.controller.resign)
