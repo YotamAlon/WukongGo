@@ -13,11 +13,10 @@
         Line:
             id: vertical_line
             points: (root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == root.board_size else root.pos[1], root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == 1 else root.pos[1] + root.size[1])
-    canvas:
-        BorderImage:
-            source: root.img
-            pos: self.pos
-            size: self.size
+    Image:
+        source: root.img
+        pos: root.pos
+        size: root.size
 
 
 <GameBoard>:
