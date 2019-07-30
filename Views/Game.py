@@ -58,7 +58,8 @@ class GameScreen(Screen):
     def update_board(self, board):
         self.board.update(board)
 
-    def show_illegal_move_popup(self, point):
+    @staticmethod
+    def show_illegal_move_popup(point):
         NotifyPopup(title='This is not a legal move!',
                     text=f'the move {point[0]}, {point[1]} is not a legal move').open()
 
