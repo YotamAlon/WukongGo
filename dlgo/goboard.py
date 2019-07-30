@@ -165,6 +165,7 @@ class GameState:
             score = next_board.place_stone(self.next_color, move.point) + self.score
         else:
             next_board = self.board
+            score = self.score
         return GameState(next_board, self.rule_set, self.next_color.other, self, move, score)
 
     @classmethod
