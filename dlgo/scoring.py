@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from dlgo.gotypes import Color, Point
 
-# this class is chinese scoring only for now.
+# this class counts the number of territories. for japanese scoring, add captures. for chinese scoring add stones.
 
 
 class Territory:
@@ -89,13 +89,13 @@ def _collect_region(start_point, board, visited=None):
             all_points += points
             all_borders |= borders
         else:
-            all_borders.add(neighbor)
+            all_borders.add(neighbor_color)
     return all_points, all_borders
 
 
-def computer_game_result(game_state):
+def compute_game_result(game_state):
     territory = evaluate_territory(game_state.board)
     return GameResult(
         territory.num_black_territory + territory.num_black_stones,
         territory.num_white_territory + territory.num_white_stones,
-        komi=game_state.rule_set.komi)
+        komi=game_state.rule_set.komi.white_score)

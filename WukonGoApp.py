@@ -13,6 +13,9 @@ from Models.Player import Player
 from peewee import SqliteDatabase
 from dlgo.gotypes import Point
 
+# this import will be removed
+from dlgo.scoring import compute_game_result
+
 
 class Controller(ScreenManager):
     def __init__(self):
@@ -40,7 +43,7 @@ class Controller(ScreenManager):
     def start_new_game(self):
         users = [User.get_or_create(token='player1')[0], User.get_or_create(token='player2')[0]]
         timer = Timer.create()
-        board = Board.create(size=9)
+        board = Board.create(size=5)
         go_game = GoGame.create(board=board)
         players = [Player.create(user=users[0], go_game=go_game, color='black'),
                    Player.create(user=users[1], go_game=go_game, color='white')]
@@ -63,6 +66,10 @@ class Controller(ScreenManager):
 
     def pass_turn(self):
         self.game.go_game.board.make_move(None, is_pass=True)
+        print("legal move: pass, current score:", self.game.go_game.board.score)
+        if self.game.go_game.board.state.is_over():
+            game_res = compute_game_result(self.game.go_game.board.state)
+            print(game_res)
 
     def resign(self):
         self.game.go_game.resign()
