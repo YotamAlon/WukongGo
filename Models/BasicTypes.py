@@ -1,15 +1,8 @@
-from peewee import Model, IntegerField, ForeignKeyField, BooleanField
 import enum
-from Models import db_proxy
+from collections import namedtuple
 
 
-class Point(Model):
-    row = IntegerField()
-    col = IntegerField()
-
-    class Meta:
-        database = db_proxy
-
+class Point(namedtuple('Point', 'row col')):
     def neighbors(self):
         return [
             Point(self.row - 1, self.col),
@@ -18,8 +11,8 @@ class Point(Model):
             Point(self.row, self.col + 1)
         ]
 
-    """def __hash__(self):
-        return hash((self.row, self.col))"""  # hash is already implemented for any Model?
+    def __hash__(self):
+        return hash((self.row, self.col))
 
     def __str__(self):
         return f'({self.row}, {self.col})'
@@ -45,47 +38,28 @@ class Color(enum.Enum):
         return self.__str__()
 
 
-class Score(Model):
-    w_score = IntegerField()
-    b_score = IntegerField()
+class Move:
+    def __init__(self, point=None, is_pass=False, is_resign=False):
+        assert (point is not None) ^ is_pass ^ is_resign
+        self.point = point
+        self.is_play = (self.point is not None)
+        self.is_pass = is_pass
+        self.is_resign = is_resign
 
-    class Meta:
-        database = db_proxy
+    @staticmethod
+    def play(point):
+        return Move(point=point, is_pass=False, is_resign=False)
 
-    def __str__(self):
-        return f'black: {self.b_score}, white: {self.w_score}'
+    @staticmethod
+    def pass_turn():
+        return Move(point=None, is_pass=True, is_resign=False)
 
-    def __repr__(self):
-        return self.__str__()
-
-    def __add__(self, other):
-        assert isinstance(other, Score)
-        return Score(self.w_score + other.w_score, self.b_score + other.b_score)
-
-
-class Move(Model):
-    point = ForeignKeyField(Point, backref="point")
-    is_play = BooleanField()
-    is_pass = BooleanField()
-    is_resign = BooleanField()
-
-    class Meta:
-        database = db_proxy
-
-    @classmethod
-    def play(cls, point):
-        return Move(point=point, is_play=True, is_pass=False, is_resign=False)
-
-    @classmethod
-    def pass_turn(cls):
-        return cls.create(point=None, is_play=False, is_pass=True, is_resign=False)
-
-    @classmethod
-    def resign(cls):
-        return cls.create(point=None, is_play=False, is_pass=False, is_resign=True)
+    @staticmethod
+    def resign():
+        return Move(point=None, is_pass=False, is_resign=True)
 
     def __str__(self):
-        if self.is_pass:
+        if self.is_play:
             return str(self.point)
         return "pass" if self.is_pass else "resign"
 

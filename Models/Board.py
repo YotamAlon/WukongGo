@@ -1,14 +1,10 @@
-from peewee import Model, IntegerField, ForeignKeyField
-from Models import db_proxy
-from Models.BasicTypes import Move, Score
-# from dlgo.rules import get_japanese_rule_set
-# from dlgo.goboard import GameState
-from dlgo import zobrist
+from Models.Scoring import Score
+from Models import zobrist
 
 
-class GoGroup(Model):
+class GoGroup:
     def __init__(self, color, stones, liberties):
-        self.color = ForeignKeyField(color)
+        self.color = color
         self.stones = frozenset(stones)
         self.liberties = frozenset(liberties)
 
@@ -39,15 +35,12 @@ class GoGroup(Model):
             self.liberties == other.liberties
 
 
-class Board(Model):
-    num_rows = IntegerField()
-    num_cols = IntegerField()
-    size = IntegerField()
-    _grid = {}
-    _hash = IntegerField(zobrist.EMPTY_BOARD)
-
-    class Meta:
-        database = db_proxy
+class Board:
+    def __init__(self, num_rows, num_cols):
+        self.num_rows = num_rows
+        self.num_cols = num_cols
+        self._grid = {}
+        self._hash = zobrist.EMPTY_BOARD
 
     def place_stone(self, color, point):
         assert self.is_on_grid(point)
@@ -92,7 +85,7 @@ class Board(Model):
             self._grid[point] = new_group
 
     def _remove_group(self, group):
-        score = Score(score_dict={group.color.other: len(group.stones), group.color: 0})
+        score = Score.from_dict(score_dict={group.color.other: len(group.stones), group.color: 0})
         for point in group.stones:
             for neighbor in point.neighbors():
                 neighbor_group = self._grid.get(neighbor)
@@ -117,38 +110,14 @@ class Board(Model):
     def grid(self):
         return [(point, self.get_color(point)) for point in self._grid]
 
+    @property
+    def size(self):
+        assert self.num_cols == self.num_rows
+        return self.num_cols
+
     def get_group(self, point):
         return self._grid.get(point)
 
     @property
     def hash(self):
         return self._hash
-
-"""
-class Board2(Model):
-    size = IntegerField()
-    # history = ManyToManyField(Move) - provided by backref from Move
-
-    class Meta:
-        database = db_proxy
-
-    def __init__(self, *args, **kwargs):
-        super(Board, self).__init__(*args, **kwargs)
-        self.state = GameState.new_game(self.size, get_japanese_rule_set())
-
-    def is_move_legal(self, point):
-        move = Move.play(point)
-        return self.state.is_valid_move(move)
-
-    def make_move(self, point=None, is_pass=False, is_resign=False):
-        move = Move(point, is_pass=is_pass, is_resign=is_resign)
-        self.state = self.state.apply_move(move)
-
-    @property
-    def score(self):
-        return self.state.score
-
-    @property
-    def grid(self):
-        return self.state.board.grid()
-"""
