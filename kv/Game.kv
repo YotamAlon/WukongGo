@@ -14,15 +14,15 @@
             id: vertical_line
             points: (root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == root.board_size else root.pos[1], root.pos[0] + (root.size[0] / 2), root.pos[1] + (root.size[1] / 2) if root.index[0] == 1 else root.pos[1] + root.size[1])
     Image:
-        source: root.img
+        source: 'assets/images/' + root.color + '.png'
         pos: root.pos
         size: root.size
 
 
 <GameBoard>:
-    canvas.before:
+    canvas:
         BorderImage:
-            source: 'assets/board.png'
+            source: 'assets/images/board.png'
             pos: self.pos
             size: self.size
 
@@ -71,7 +71,7 @@
             Button:
                 text: 'Go back to menu'
                 size_hint_y: None
-                on_release: root.handle_click('back_to_menu')
+                on_release: root.navigate('menu')
             Button:
                 text: 'Pass'
                 size_hint_y: None

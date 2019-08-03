@@ -9,14 +9,14 @@ from Views.Fragments import NotifyPopup
 
 class Piece(Button):
     index = ListProperty(None)
-    img = StringProperty('assets/blank.png')
+    color = StringProperty('blank')
     board_size = NumericProperty(None)
 
     def place_piece(self, color):
         if color is None:
-            self.img = 'assets/blank.png'
+            self.color = 'blank'
         else:
-            self.img = 'assets/' + str(color) + '.png'
+            self.color = str(color)
 
 
 class GameBoard(GridLayout):
@@ -43,6 +43,7 @@ class GameScreen(Screen):
     board_container = ObjectProperty(None)
     board = ObjectProperty(None)
     score = StringProperty('0 - 0')
+    player_names = ['Player 1', 'Player 2']
 
     def __init__(self, **kwargs):
         Builder.load_file("kv/Game.kv")
@@ -61,6 +62,3 @@ class GameScreen(Screen):
     def show_illegal_move_popup(self, point):
         NotifyPopup(title='This is not a legal move!',
                     text=f'the move {point[0]}, {point[1]} is not a legal move').open()
-
-    def handle_click(self, signal):
-        self.manager.handle_click(signal)

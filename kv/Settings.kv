@@ -1,0 +1,21 @@
+<SettingsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        GridLayout:
+            cols: 2
+            Label:
+                text: 'Player 1\'s name'
+            TextInput:
+                on_text:
+                    app.controller.change_player_name(0, self.text)
+            Label:
+                text: 'Player 1\'s name'
+            TextInput:
+                on_text:
+                    app.controller.change_player_name(1, self.text)
+        BoxLayout:
+            size_hint: None, None
+            Button:
+                text: 'Back to menu'
+                on_release:
+                    app.controller.navigate('menu')

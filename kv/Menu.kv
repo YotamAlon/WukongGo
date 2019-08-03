@@ -1,6 +1,21 @@
 <MenuScreen>:
+    background_color: 1, 1, 1, 1
     BoxLayout:
         orientation: 'vertical'
-        Button:
-            text: 'Start new local game'
-            on_release: root.handle_click('new_game_please')
+        Label:
+            text: 'WukonGo'
+            size_hint: None, None
+            pos_hint: {"center_x": 0.5}
+        Image:
+            source: 'assets/images/wukongo.png'
+        BoxLayout:
+            orientation: 'vertical'
+            width: self.parent.width * 0.5
+            size_hint: None, None
+            pos_hint: {"center_x": 0.5}
+            Button:
+                text: 'New game'
+                on_release: app.controller.navigate('game')
+            Button:
+                text: 'Settings'
+                on_release: app.controller.navigate('settings')
