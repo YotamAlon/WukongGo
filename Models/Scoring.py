@@ -1,9 +1,43 @@
-from __future__ import absolute_import
-from collections import namedtuple
+from Models.BasicTypes import Color, Point
 
-from dlgo.gotypes import Color, Point
 
-# this class counts the number of territories. for japanese scoring, add captures. for chinese scoring add stones.
+class Score:
+    def __init__(self, w_score=0, b_score=0):
+        self.w_score = w_score
+        self.b_score = b_score
+
+    @staticmethod
+    def from_dict(score_dict):
+        w_score = score_dict[Color.white]
+        b_score = score_dict[Color.black]
+        return Score(w_score, b_score)
+
+    def __str__(self):
+        return f'black: {self.b_score}, white: {self.w_score}'
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __add__(self, other):
+        assert isinstance(other, Score)
+        return Score(self.w_score + other.w_score, self.b_score + other.b_score)
+
+
+class GameResult(Score):
+    @property
+    def winner(self):
+        if self.b_score > self.w_score:
+            return Color.black
+        return Color.white
+
+    @property
+    def winning_margin(self):
+        return abs(self.b_score - self.w_score)
+
+    def __str__(self):
+        if self.b_score > self.w_score:
+            return 'B+%.1f' % (self.b_score - self.w_score)
+        return 'W+%.1f' % (self.w_score - self.b_score)
 
 
 class Territory:
@@ -28,25 +62,6 @@ class Territory:
                 self.dame_points.append(point)
 
 
-class GameResult(namedtuple('GameResult', 'b w komi')):
-    @property
-    def winner(self):
-        if self.b > self.w + self.komi:
-            return Color.black
-        return Color.white
-
-    @property
-    def winning_margin(self):
-        w = self.w + self.komi
-        return abs(self.b - w)
-
-    def __str__(self):
-        w = self.w + self.komi
-        if self.b > w:
-            return 'B+%.1f' % (self.b - w,)
-        return 'W+%.1f' % (w - self.b,)
-
-
 def evaluate_territory(board):
     status = {}
     for r in range(1, board.num_rows + 1):
@@ -54,7 +69,7 @@ def evaluate_territory(board):
             p = Point(row=r, col=c)
             if p in status:
                 continue
-            color = board.get(p)
+            color = board.get_color(p)
             if color is not None:
                 status[p] = color
             else:
@@ -79,11 +94,11 @@ def _collect_region(start_point, board, visited=None):
     all_points = [start_point]
     all_borders = set()
     visited.add(start_point)
-    start_color = board.get(start_point)
+    start_color = board.get_color(start_point)
     for neighbor in start_point.neighbors():
         if not board.is_on_grid(neighbor):
             continue
-        neighbor_color = board.get(neighbor)
+        neighbor_color = board.get_color(neighbor)
         if neighbor_color == start_color:
             points, borders = _collect_region(neighbor, board, visited)
             all_points += points
@@ -96,6 +111,5 @@ def _collect_region(start_point, board, visited=None):
 def compute_game_result(game_state):
     territory = evaluate_territory(game_state.board)
     return GameResult(
-        territory.num_black_territory + territory.num_black_stones,
-        territory.num_white_territory + territory.num_white_stones,
-        komi=game_state.rule_set.komi.white_score)
+        b_score=territory.num_black_territory + territory.num_black_stones,
+        w_score=territory.num_white_territory + territory.num_white_stones)
