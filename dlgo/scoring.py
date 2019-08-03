@@ -54,7 +54,7 @@ def evaluate_territory(board):
             p = Point(row=r, col=c)
             if p in status:
                 continue
-            color = board.get(p)
+            color = board.get_color(p)
             if color is not None:
                 status[p] = color
             else:
@@ -79,11 +79,11 @@ def _collect_region(start_point, board, visited=None):
     all_points = [start_point]
     all_borders = set()
     visited.add(start_point)
-    start_color = board.get(start_point)
+    start_color = board.get_color(start_point)
     for neighbor in start_point.neighbors():
         if not board.is_on_grid(neighbor):
             continue
-        neighbor_color = board.get(neighbor)
+        neighbor_color = board.get_color(neighbor)
         if neighbor_color == start_color:
             points, borders = _collect_region(neighbor, board, visited)
             all_points += points

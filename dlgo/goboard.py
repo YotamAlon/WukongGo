@@ -155,7 +155,7 @@ class GameState:
         else:
             self.previous_states = frozenset(
                 previous.previous_states |
-                {(previous.next_color, previous.board.zobrist_hash())})
+                {(previous.next_color, previous.board.hash())})
 
         self.last_move = move
 
@@ -187,7 +187,7 @@ class GameState:
 
     @property
     def situation(self):
-        return self.next_color, self.board.zobrist_hash()
+        return self.next_color, self.board.hash()
 
     def is_valid_move(self, move):
         return self.rule_set.is_valid_move(game_state=self, color=self.next_color, move=move)

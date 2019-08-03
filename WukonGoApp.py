@@ -3,15 +3,16 @@ from kivy.uix.screenmanager import ScreenManager
 from Views.Game import GameScreen
 from Views.Menu import MenuScreen
 from Models import db_proxy
-from Models.Move import Move
+from Models.BasicTypes import Move
 from Models.Game import Game
 from Models.User import User
 from Models.Timer import Timer
-from Models.Board import Board
-from Models.GoGame import GoGame
 from Models.Player import Player
 from peewee import SqliteDatabase
-from dlgo.gotypes import Point
+from Models.BasicTypes import Point
+from Models.Board import Board
+from Models.State import State
+from dlgo.rules import get_japanese_rule_set
 
 # this import will be removed
 from dlgo.scoring import compute_game_result
@@ -35,19 +36,19 @@ class Controller(ScreenManager):
         db_proxy.initialize(db)
         db.connect()
         # Main tables
-        db.create_tables([Move, Game, User, Timer, Board, GoGame, Player])
+        db.create_tables([Move, Game, User, Timer, Player])
         # Secondary tables
-        db.create_tables([Game.users.get_through_model()])
+#        db.create_tables([Game.users.get_through_model()])
         db.close()
 
     def start_new_game(self):
         users = [User.get_or_create(token='player1')[0], User.get_or_create(token='player2')[0]]
         timer = Timer.create()
-        board = Board.create(size=5)
-        go_game = GoGame.create(board=board)
+        board = Board.create(num_rows=9, num_cols=9, size=9)
+        go_game = State.create(board=board)
         players = [Player.create(user=users[0], go_game=go_game, color='black'),
                    Player.create(user=users[1], go_game=go_game, color='white')]
-        self.game = Game.create(timer=timer, go_game=go_game)
+        self.game = Game.new_game(size=9, rule_set=get_japanese_rule_set(), users=users, timer=timer)
         self.game.users = users
         self.players = players
         return self.game

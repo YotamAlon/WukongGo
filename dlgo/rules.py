@@ -19,7 +19,7 @@ class BasicRule(Rule):
             return True
         if color is None:
             return False
-        if game_state.board.get(move.point) is not None:
+        if game_state.board.get_color(move.point) is not None:
             return False
         return True
 
@@ -31,7 +31,7 @@ class KoRule(Rule):
             return True
         next_board = copy.deepcopy(game_state.board)
         next_board.place_stone(color, move.point)
-        next_situation = (color.other, next_board.zobrist_hash())
+        next_situation = (color.other, next_board.hash())
         return next_situation != game_state.previous_state.situation
 
 
@@ -40,7 +40,7 @@ class SuperKoRule(Rule):
     def is_valid_move(game_state, color, move):
         next_board = copy.deepcopy(game_state.board)
         next_board.place_stone(color, move.point)
-        next_situation = (color.other, next_board.zobrist_hash())
+        next_situation = (color.other, next_board.hash())
         return next_situation not in game_state.previous_states
 
 
@@ -49,7 +49,7 @@ class SelfCaptureRule(Rule):
     def is_valid_move(game_state, color, move):
         next_board = copy.deepcopy(game_state.board)
         next_board.place_stone(color, move.point)
-        new_group = next_board.get_go_group(move.point)
+        new_group = next_board.get_group(move.point)
         return new_group.num_liberties != 0
 
 

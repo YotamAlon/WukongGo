@@ -5,11 +5,11 @@ def is_point_an_eye(board, point, color):
     """
     note - not completely accurate. fails to notice the two eye, two group setting.
     """
-    if board.get(point) is not None:
+    if board.get_color(point) is not None:
         return False
     for neighbor in point.neighbors():
         if board.is_on_grid(neighbor):
-            neighbor_color = board.get(neighbor)
+            neighbor_color = board.get_color(neighbor)
             if neighbor_color != color:
                 return False
 
@@ -23,7 +23,7 @@ def is_point_an_eye(board, point, color):
     ]
     for corner in corners:
         if board.is_on_grid(corner):
-            corner_color = board.get(corner)
+            corner_color = board.get_color(corner)
             if corner_color == color:
                 friendly_corners += 1
         else:
