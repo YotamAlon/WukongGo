@@ -2,7 +2,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.button import Button
 from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty
 from kivy.uix.gridlayout import GridLayout
-from dlgo.gotypes import Point
+from Models.BasicTypes import Point
 from kivy.lang import Builder
 from Views.Fragments import NotifyPopup
 
@@ -50,15 +50,16 @@ class GameScreen(Screen):
         super(GameScreen, self).__init__(name=kwargs['name'])
 
     def initialize(self, game):
-        self.board = GameBoard(game.go_game.board.size)
+        self.board = GameBoard(game.size)
         self.board_container.add_widget(self.board)
 
     def update_score(self, score):
-        self.score = f'{score.black_score} - {score.white_score}'
+        self.score = f'{score.b_score} - {score.w_score}'
 
     def update_board(self, board):
         self.board.update(board)
 
-    def show_illegal_move_popup(self, point):
+    @staticmethod
+    def show_illegal_move_popup(point):
         NotifyPopup(title='This is not a legal move!',
                     text=f'the move {point[0]}, {point[1]} is not a legal move').open()

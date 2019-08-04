@@ -1,4 +1,4 @@
-from .gotypes import Color, Point
+from .BasicTypes import Color, Point
 
 __all__ = ['HASH_CODE', 'EMPTY_BOARD']
 

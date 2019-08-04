@@ -1,9 +1,4 @@
-from peewee import Model, CharField
-from Models import db_proxy
-
-
-class User(Model):
-    token = CharField()
-
-    class Meta:
-        database = db_proxy
+class User:
+    def __init__(self, token, display_name):
+        self.token = token
+        self.display_name = display_name

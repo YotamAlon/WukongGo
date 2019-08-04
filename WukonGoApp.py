@@ -3,22 +3,22 @@ from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager
 from Views.Game import GameScreen
 from Views.Menu import MenuScreen
+from Models.BasicTypes import Color
 from Views.Settings import SettingsScreen
 from Models import db_proxy
 from Models.Move import Move
 from Models.Game import Game
 from Models.User import User
 from Models.Timer import Timer
-from Models.Board import Board
-from Models.GoGame import GoGame
 from Models.Player import Player
-from peewee import SqliteDatabase
-from dlgo.gotypes import Point
+from Models.BasicTypes import Point
+from Models.Rule import get_japanese_rule_set
 
 
 class Controller(ScreenManager):
     def __init__(self):
         super(Controller, self).__init__()
+        self.game = None
 
     def initialize(self):
         self.add_widget(MenuScreen(name='menu'))
@@ -31,44 +31,36 @@ class Controller(ScreenManager):
 
     @staticmethod
     def initialize_db():
-        db = SqliteDatabase('WukonGo.db')
-        db_proxy.initialize(db)
-        db.connect()
-        # Main tables
-        db.create_tables([Move, Game, User, Timer, Board, GoGame, Player])
-        # Secondary tables
-        db.create_tables([Game.users.get_through_model()])
-        db.close()
+        pass
 
     def start_new_game(self):
-        users = [User.get_or_create(token='player1')[0], User.get_or_create(token='player2')[0]]
-        timer = Timer.create()
-        board = Board.create(size=9)
-        go_game = GoGame.create(board=board)
-        players = [Player.create(user=users[0], go_game=go_game, color='black'),
-                   Player.create(user=users[1], go_game=go_game, color='white')]
-        self.game = Game.create(timer=timer, go_game=go_game)
-        self.game.users = users
-        self.players = players
-        return self.game
+        users = [User(1, 1), User(2, 2)]
+        timer = Timer()
+        players = {Color.black: Player(users[0], Color.black), Color.white: Player(users[1], Color.white)}
+        self.game = Game.new_game(size=9, rule_set=get_japanese_rule_set(), players=players, timer=timer)
+        return self.game  # a bit weird, why are we assigning it to self and returning it? one should be enough.
 
     def process_move(self, index):
         point = Point(*index)
-        if self.game.go_game.board.is_move_legal(point):
-            self.game.go_game.board.make_move(point=point)
-            self.get_screen('game').update_board(self.game.go_game.board)
-            self.get_screen('game').update_score(self.game.go_game.board.score)
-            print("legal move:", point, "current score:", self.game.go_game.board.score)
+        if self.game.is_legal(point):
+            self.game.make_move(point=point)
+            self.get_screen('game').update_board(self.game.state.board)
+            self.get_screen('game').update_score(self.game.state.score)
+            print("legal move:", point, "current score:", self.game.state.score)
 
         else:
             self.get_screen('game').show_illegal_move_popup(point)
-            print("illegal move: ", point, "current score:", self.game.go_game.board.score)
+            print("illegal move: ", point, "current score:", self.game.state.score)
 
     def pass_turn(self):
-        self.game.go_game.board.make_move(None, is_pass=True)
+        print(f'\n{self.game.to_sgf}\n')
+        game_res = self.game.pass_turn()
+        print("legal move: pass, current score:", self.game.state.score)
+        if game_res is not None:
+            print(game_res)
 
     def resign(self):
-        self.game.go_game.resign()
+        self.game.resign()
         print('you have resigned')
 
     def navigate(self, signal):
