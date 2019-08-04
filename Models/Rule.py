@@ -54,9 +54,10 @@ class SelfCaptureRule(Rule):
 
 
 class RuleSet:
-    def __init__(self, *rules, komi):
+    def __init__(self, *rules, komi, name):
         self.rules = [BasicRule] + [*rules]
         self.komi = komi
+        self.name = name
 
     def is_valid_move(self, game_state, color, move):
         for rule in self.rules:
@@ -66,25 +67,25 @@ class RuleSet:
 
 
 def get_ai_rule_set():
-    return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(w_score=7.5))
+    return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(w_score=7.5), name="ai")
 
 
 def get_japanese_rule_set():
     """
     https://senseis.xmp.net/?JapaneseRules
     """
-    return RuleSet(SelfCaptureRule, KoRule, komi=Score(w_score=6.5))
+    return RuleSet(SelfCaptureRule, KoRule, komi=Score(w_score=6.5), name="japanese")
 
 
 def get_chinese_rule_set():
     """
     https://senseis.xmp.net/?ChineseRules
     """
-    return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(w_score=7.5))
+    return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(w_score=7.5), name="chinese")
 
 
 def get_ign_rule_set():
     """
     https://senseis.xmp.net/?IngRules
     """
-    return RuleSet(SuperKoRule, komi=Score(w_score=7.5))
+    return RuleSet(SuperKoRule, komi=Score(w_score=7.5), name="ign")

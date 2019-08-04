@@ -20,6 +20,14 @@ class Point(namedtuple('Point', 'row col')):
     def __repr__(self):
         return self.__str__()
 
+    @staticmethod
+    def _int_to_str(num):
+        return chr(ord('a') + num - 1)
+
+    @property
+    def sgf_str(self):
+        return self._int_to_str(self.col) + self._int_to_str(self.row)
+
 
 class Color(enum.Enum):
     black = 1
@@ -36,6 +44,10 @@ class Color(enum.Enum):
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def sgf_str(self):
+        return "W" if self == Color.white else "B"
 
 
 class Move:
@@ -65,3 +77,12 @@ class Move:
 
     def __repr__(self):
         return str(self)
+
+    @property
+    def sgf_str(self):
+        if self.is_play:
+            return self.point.sgf_str
+        if self.is_pass:
+            return "pass"
+        if self.is_resign:
+            return "resign"
