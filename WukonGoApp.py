@@ -9,7 +9,6 @@ from Models.Timer import Timer
 from Models.Player import Player
 from Models.BasicTypes import Point
 from Models.Rule import get_japanese_rule_set
-from SGF.Export import SGF
 
 
 class Controller(ScreenManager):
@@ -49,8 +48,7 @@ class Controller(ScreenManager):
             print("illegal move: ", point, "current score:", self.game.state.score)
 
     def pass_turn(self):
-        sgf = SGF(self.game)
-        print(f'\n{sgf}\n')
+        print(f'\n{self.game.to_sgf}\n')
         game_res = self.game.pass_turn()
         print("legal move: pass, current score:", self.game.state.score)
         if game_res is not None:

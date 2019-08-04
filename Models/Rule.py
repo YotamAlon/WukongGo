@@ -89,3 +89,14 @@ def get_ign_rule_set():
     https://senseis.xmp.net/?IngRules
     """
     return RuleSet(SuperKoRule, komi=Score(w_score=7.5), name="ign")
+
+
+def get_rule_set_by_name(name):
+    if name == "japanese":
+        return get_japanese_rule_set()
+    if name == "chinese":
+        return get_chinese_rule_set()
+    if name == "ign":
+        return get_ign_rule_set()
+    if name == "ai":
+        return get_ai_rule_set()
