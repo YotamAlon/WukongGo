@@ -1,5 +1,10 @@
 from Models.State import State
-from Models.BasicTypes import Move, Point
+from Models.BasicTypes import Move, Point, Color
+from Models.SGF import SGF
+from Models.Rule import get_rule_set_by_name
+from Models.Player import Player
+from Models.User import User
+from Models.Timer import Timer
 
 
 class Game:
@@ -31,6 +36,27 @@ class Game:
 
     def resign(self):
         return self._make_move(Move.resign())
+
+    def to_sgf(self):
+        return SGF(self)
+
+    @staticmethod
+    def _from_sgf(sgf):
+        assert isinstance(sgf, SGF)
+        size = sgf.header['SZ']
+        rules = get_rule_set_by_name(sgf.header['RU'])
+        players = {Color.black: Player(User(sgf.header['BP'], 1), Color.black),
+                   Color.white: Player(User(sgf.header['WP'], 2), Color.white)}
+        game = Game.new_game(size, rules, players, Timer())
+
+        for move in sgf.moves:
+            game.make_move(Move.from_sgf(move[game.state.next_color.sgf_str]))
+        return game
+
+    @staticmethod
+    def from_sgf(sgf_string):
+        sgf = SGF.from_string(sgf_string)
+        return Game._from_sgf(sgf)
 
     @property
     def score(self):

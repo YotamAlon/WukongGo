@@ -14,6 +14,7 @@ from Models.Rule import get_japanese_rule_set
 class Controller(ScreenManager):
     def __init__(self):
         super(Controller, self).__init__()
+        self.game = None
 
     def initialize(self):
         self.add_widget(MenuScreen(name='menu'))
@@ -28,9 +29,9 @@ class Controller(ScreenManager):
         pass
 
     def start_new_game(self):
-        users = [User(1), User(2)]
+        users = [User(1, 1), User(2, 2)]
         timer = Timer()
-        players = [Player(users[0], Color.black), Player(users[1], Color.white)]
+        players = {Color.black: Player(users[0], Color.black), Color.white: Player(users[1], Color.white)}
         self.game = Game.new_game(size=9, rule_set=get_japanese_rule_set(), players=players, timer=timer)
         return self.game  # a bit weird, why are we assigning it to self and returning it? one should be enough.
 
@@ -47,6 +48,7 @@ class Controller(ScreenManager):
             print("illegal move: ", point, "current score:", self.game.state.score)
 
     def pass_turn(self):
+        print(f'\n{self.game.to_sgf}\n')
         game_res = self.game.pass_turn()
         print("legal move: pass, current score:", self.game.state.score)
         if game_res is not None:

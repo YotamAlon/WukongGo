@@ -20,6 +20,22 @@ class Point(namedtuple('Point', 'row col')):
     def __repr__(self):
         return self.__str__()
 
+    @staticmethod
+    def _int_to_str(num):
+        return chr(ord('a') + num - 1)
+
+    @staticmethod
+    def _str_to_int(string):
+        return ord(string) - ord('a') + 1
+
+    @property
+    def sgf_str(self):
+        return self._int_to_str(self.col) + self._int_to_str(self.row)
+
+    @staticmethod
+    def from_sgf(string):
+        return Point(col=Point._str_to_int(string[0]), row=Point._str_to_int(string[1]))
+
 
 class Color(enum.Enum):
     black = 1
@@ -36,6 +52,18 @@ class Color(enum.Enum):
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def sgf_str(self):
+        return "W" if self == Color.white else "B"
+
+    @staticmethod
+    def from_sgf(string):
+        if string == "W":
+            return Color.white
+        if string == "B":
+            return Color.black
+        raise Exception("Color sgf string should be W or B")
 
 
 class Move:
@@ -65,3 +93,16 @@ class Move:
 
     def __repr__(self):
         return str(self)
+
+    @property
+    def sgf_str(self):
+        if self.is_play:
+            return self.point.sgf_str
+        if self.is_pass:
+            raise Exception("pass type moves shouldn't be converted to sgf")
+        if self.is_resign:
+            raise Exception("resign type moves shouldn't be converted to sgf")
+
+    @staticmethod
+    def from_sgf(string):
+        return Move(Point.from_sgf(string))
