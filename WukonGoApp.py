@@ -5,8 +5,6 @@ from Views.Game import GameScreen
 from Views.Menu import MenuScreen
 from Models.BasicTypes import Color
 from Views.Settings import SettingsScreen
-from Models import db_proxy
-from Models.Move import Move
 from Models.Game import Game
 from Models.User import User
 from Models.Timer import Timer
@@ -67,13 +65,19 @@ class Controller(ScreenManager):
         if signal == 'game':
             game = self.start_new_game()
             self.get_screen('game').initialize(game)
-            self.switch_to(self.get_screen('game'))
+            self.transition.direction = 'down'
+            self.current = 'game'
 
         elif signal == 'menu':
-            self.switch_to(self.get_screen('menu'), direction='right')
+            if self.current == 'game':
+                self.transition.direction = 'up'
+            elif self.current == 'settings':
+                self.transition.direction = 'down'
+            self.current = 'menu'
 
         elif signal == 'settings':
-            self.switch_to(self.get_screen('settings'), direction='up')
+            self.transition.direction = 'up'
+            self.current = 'settings'
 
     def change_player_name(self, player_id, name):
         if player_id == 0:
@@ -91,7 +95,6 @@ class WukonGoApp(App):
 
     def build(self):
         Window.size = (400, 600)
-        Window.clearcolor = (1, 1, 1, 1)
         return self.controller
 
 

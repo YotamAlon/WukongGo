@@ -1,4 +1,4 @@
-from Models.Game import Game
+
 from Models.BasicTypes import Color
 from Models.State import State
 
@@ -7,6 +7,7 @@ class SGF:
     def __init__(self, game=None, nodes=None):
         if game is not None:
             self.nodes = []
+            from Models.Game import Game
             assert isinstance(game, Game)
             state = game.state
             while state.previous_state is not None:
@@ -20,6 +21,7 @@ class SGF:
     # the header of an sgf file, also called the root node.
     @staticmethod
     def header_from_game(game):
+        from Models.Game import Game
         assert isinstance(game, Game)
         header = {
             'FF': 4,  # FF[4] means SGF version 4.
