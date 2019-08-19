@@ -1,13 +1,16 @@
 <MenuScreen>:
     background_color: 1, 1, 1, 1
+    canvas.before:
+        Rectangle:
+            pos: -2500, -600
+            size: 3184, 2546
+            source: 'assets/images/sakura.jpg'
     BoxLayout:
         orientation: 'vertical'
         Label:
             text: 'WukonGo'
             size_hint: None, None
             pos_hint: {"center_x": 0.5}
-        Image:
-            source: 'assets/images/wukongo.png'
         BoxLayout:
             orientation: 'vertical'
             width: self.parent.width * 0.5
