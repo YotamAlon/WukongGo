@@ -44,26 +44,26 @@
     BoxLayout:
         orientation: 'vertical'
         BoxLayout:
-            canvas.before:
-                Color:
-                    rgba: 0.5, 0.5, 0.5, 1
-                Rectangle:
-                    size: self.size
-                    pos: self.pos
             orientation: 'horizontal'
             size_hint_y: None
             Label:
                 id: player_1_label_id
                 text: 'Black: Player 1'
                 color: 1, 0, 0, 1
+                outline_color: 0,0,0,0.8
+                outline_width: 2
             Label:
                 id: score_board_id
                 text: root.score
                 color: 0, 1, 0, 1
+                outline_color: 0,0,0,0.8
+                outline_width: 2
             Label:
                 id: player_2_label_id
                 text: 'White: Player 2'
                 color: 0, 0, 1, 1
+                outline_color: 0,0,0,0.8
+                outline_width: 2
         BoxLayout:
             RelativeLayout:
                 id: board_container
@@ -77,12 +77,15 @@
                 text: 'Go back to menu'
                 size_hint_y: None
                 on_release: app.controller.navigate('menu')
+                background_color: 0,0,0,1
             Button:
                 text: 'Pass'
                 size_hint_y: None
                 on_release: app.controller.pass_turn()
+                background_color: 0,0,0,1
             Button:
                 text: 'Resign'
                 size_hint_y: None
                 on_release: self.popup.open()
+                background_color: 0,0,0,1
                 popup: ConfirmPopup(title='Are you sure you want to resign?', text='This will cause you to lose.', callback=app.controller.resign)
