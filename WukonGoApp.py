@@ -62,6 +62,7 @@ class Controller(ScreenManager):
         print('you have resigned')
 
     def navigate(self, signal):
+        self.transition.duration = 1
         if signal == 'game':
             game = self.start_new_game()
             self.get_screen('game').initialize(game)

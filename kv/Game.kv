@@ -46,46 +46,43 @@
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
+            height: 50
             Label:
                 id: player_1_label_id
                 text: 'Black: Player 1'
-                color: 1, 0, 0, 1
-                outline_color: 0,0,0,0.8
-                outline_width: 2
+                outline_color: 0, 0, 0, 0.8
+                outline_width: 1
             Label:
                 id: score_board_id
                 text: root.score
-                color: 0, 1, 0, 1
-                outline_color: 0,0,0,0.8
-                outline_width: 2
+                outline_color: 0, 0, 0, 0.8
+                outline_width: 1
             Label:
                 id: player_2_label_id
                 text: 'White: Player 2'
-                color: 0, 0, 1, 1
-                outline_color: 0,0,0,0.8
-                outline_width: 2
+                outline_color: 0, 0, 0, 0.8
+                outline_width: 1
         BoxLayout:
             RelativeLayout:
                 id: board_container
                 size_hint: None, None
                 size: min(self.parent.size), min(self.parent.size)
                 pos: self.parent.pos[0] + ((self.parent.size[0] - self.size[0]) / 2), self.pos[1]
+                pos_hint: {"center_x": 0.5, "center_y": 0.5}
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
+            height: 50
             Button:
                 text: 'Go back to menu'
-                size_hint_y: None
                 on_release: app.controller.navigate('menu')
                 background_color: 0,0,0,1
             Button:
                 text: 'Pass'
-                size_hint_y: None
                 on_release: app.controller.pass_turn()
                 background_color: 0,0,0,1
             Button:
                 text: 'Resign'
-                size_hint_y: None
                 on_release: self.popup.open()
                 background_color: 0,0,0,1
                 popup: ConfirmPopup(title='Are you sure you want to resign?', text='This will cause you to lose.', callback=app.controller.resign)
