@@ -5,6 +5,7 @@ from kivy.uix.gridlayout import GridLayout
 from Models.BasicTypes import Point
 from kivy.lang import Builder
 from Views.Fragments import NotifyPopup
+from Models.BasicTypes import Color
 
 
 class Piece(Button):
@@ -63,3 +64,9 @@ class GameScreen(Screen):
     def show_illegal_move_popup(point):
         NotifyPopup(title='This is not a legal move!',
                     text=f'the move {point[0]}, {point[1]} is not a legal move').open()
+
+    def show_game_finished_popup(self, result):
+        winner = 'Black' if result.winner == Color.black else 'White'
+        NotifyPopup(title='Game is finished!', text=f'The winner is {winner}.\nThe final score is '
+                                                    f'Black - {result.b_score} and White - {result.w_score}',
+                    on_dismiss=lambda _: self.manager.navigate('menu')).open()

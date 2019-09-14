@@ -11,6 +11,7 @@ from Models.Timer import Timer
 from Models.Player import Player
 from Models.BasicTypes import Point
 from Models.Rule import get_japanese_rule_set
+from Models.Scoring import GameResult
 
 
 class Controller(ScreenManager):
@@ -41,24 +42,29 @@ class Controller(ScreenManager):
     def process_move(self, index):
         point = Point(*index)
         if self.game.is_legal(point):
-            self.game.make_move(point=point)
-            self.get_screen('game').update_board(self.game.state.board)
-            self.get_screen('game').update_score(self.game.state.score)
-            print("legal move:", point, "current score:", self.game.state.score)
+            result = self.game.make_move(point=point)
+            if isinstance(result, GameResult):
+                self.get_screen('game').show_game_finished_popup(result)
+            else:
+                self.get_screen('game').update_board(self.game.state.board)
+                self.get_screen('game').update_score(self.game.state.score)
+                print("legal move:", point, "current score:", self.game.state.score)
 
         else:
             self.get_screen('game').show_illegal_move_popup(point)
             print("illegal move: ", point, "current score:", self.game.state.score)
 
     def pass_turn(self):
-        print(f'\n{self.game.to_sgf}\n')
-        game_res = self.game.pass_turn()
-        print("legal move: pass, current score:", self.game.state.score)
-        if game_res is not None:
-            print(game_res)
+        #print(f'\n{self.game.to_sgf()}\n') This is currently not working
+        result = self.game.pass_turn()
+        if isinstance(result, GameResult):
+            self.get_screen('game').show_game_finished_popup(result)
+        else:
+            print("legal move: pass, current score:", result)
 
     def resign(self):
-        self.game.resign()
+        result = self.game.resign()
+        self.get_screen('game').show_game_finished_popup(result)
         print('you have resigned')
 
     def navigate(self, signal):
