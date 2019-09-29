@@ -1,0 +1,41 @@
+<SettingsScreen>:
+    canvas.before:
+        Rectangle:
+            pos: -2500, 0
+            size: 3184, 2546
+            source: 'assets/images/sakura.jpg'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            pos_hint: {'top': 0}
+            orientation: 'vertical'
+            BoxLayout:
+                size_hint_y: None
+                height: 50
+                Label:
+                    text: 'Player 1\'s name'
+                    outline_color: 0, 0, 0, 0.8
+                    outline_width: 1
+                TextInput:
+                    text: 'Player 1'
+                    on_text:
+                        app.controller.change_player_name(0, self.text)
+            BoxLayout:
+                size_hint_y: None
+                height: 50
+                Label:
+                    outline_color: 0, 0, 0, 0.8
+                    outline_width: 1
+                    text: 'Player 2\'s name'
+                TextInput:
+                    text: 'Player 2'
+                    on_text:
+                        app.controller.change_player_name(1, self.text)
+        BoxLayout:
+            size_hint: None, None
+            height: 50
+            Button:
+                background_color: 0, 0, 0, 1
+                text: 'Back to menu'
+                on_release:
+                    app.controller.navigate('menu')

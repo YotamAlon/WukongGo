@@ -1,8 +1,10 @@
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager
 from Views.Game import GameScreen
 from Views.Menu import MenuScreen
 from Models.BasicTypes import Color
+from Views.Settings import SettingsScreen
 from Models.Game import Game
 from Models.User import User
 from Models.Timer import Timer
@@ -19,6 +21,7 @@ class Controller(ScreenManager):
     def initialize(self):
         self.add_widget(MenuScreen(name='menu'))
         self.add_widget(GameScreen(name='game'))
+        self.add_widget(SettingsScreen(name='settings'))
 
         self.initialize_db()
 
@@ -58,14 +61,30 @@ class Controller(ScreenManager):
         self.game.resign()
         print('you have resigned')
 
-    def handle_click(self, signal):
-        if signal == 'new_game_please':
+    def navigate(self, signal):
+        self.transition.duration = 1
+        if signal == 'game':
             game = self.start_new_game()
             self.get_screen('game').initialize(game)
-            self.switch_to(self.get_screen('game'))
+            self.transition.direction = 'down'
+            self.current = 'game'
 
-        elif signal == 'back_to_menu':
-            self.switch_to(self.get_screen('menu'), direction='right')
+        elif signal == 'menu':
+            if self.current == 'game':
+                self.transition.direction = 'up'
+            elif self.current == 'settings':
+                self.transition.direction = 'down'
+            self.current = 'menu'
+
+        elif signal == 'settings':
+            self.transition.direction = 'up'
+            self.current = 'settings'
+
+    def change_player_name(self, player_id, name):
+        if player_id == 0:
+            self.get_screen('game').player_1_label.text = name
+        else:
+            self.get_screen('game').player_2_label.text = name
 
 
 class WukonGoApp(App):
@@ -76,6 +95,7 @@ class WukonGoApp(App):
         self.controller.initialize()
 
     def build(self):
+        Window.size = (400, 600)
         return self.controller
 
 
