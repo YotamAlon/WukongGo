@@ -29,7 +29,8 @@ class SGF:
             'SZ': game.size,
             'BP': game.players[Color.black].user.display_name,
             'WP': game.players[Color.white].user.display_name,
-            'RU': game.state.rule_set.name
+            'RU': game.state.rule_set.name,
+            'KM': game.state.rule_set.komi.w_score
         }
 
         return header
@@ -90,10 +91,10 @@ class SGF:
     def __str__(self):
         string = "("
         for node in self.nodes:
-            string += ";"
+            string += "\n;"
             for key in node:
-                string += f'{key}[{node[key]}]\n'
-        string += ")"
+                string += f'{key}[{node[key]}]'
+        string += "\n)"
         return string
 
     def __repr__(self):
