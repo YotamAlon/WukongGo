@@ -48,6 +48,8 @@ class Territory:
         self.num_white_stones = 0
         self.num_dame = 0
         self.dame_points = []
+        self.white_territory = set()
+        self.black_territory = set()
         for point, status in territory_map.items():  # <2>
             if status == Color.black:
                 self.num_black_stones += 1
@@ -55,11 +57,23 @@ class Territory:
                 self.num_white_stones += 1
             elif status == 'territory_black':
                 self.num_black_territory += 1
+                self.black_territory.add(point)
             elif status == 'territory_white':
                 self.num_white_territory += 1
+                self.white_territory.add(point)
             elif status == 'dame':
                 self.num_dame += 1
                 self.dame_points.append(point)
+
+
+def _get_color(board, point):
+    color = board.get_color(point)
+    if color is None:
+        return None
+    group = board.get_group(point)
+    if group.is_dead:
+        return None
+    return color
 
 
 def evaluate_territory(board):
@@ -69,7 +83,7 @@ def evaluate_territory(board):
             p = Point(row=r, col=c)
             if p in status:
                 continue
-            color = board.get_color(p)
+            color = _get_color(board, p)
             if color is not None:
                 status[p] = color
             else:
@@ -94,11 +108,11 @@ def _collect_region(start_point, board, visited=None):
     all_points = [start_point]
     all_borders = set()
     visited.add(start_point)
-    start_color = board.get_color(start_point)
+    start_color = _get_color(board, start_point)
     for neighbor in start_point.neighbors():
         if not board.is_on_grid(neighbor):
             continue
-        neighbor_color = board.get_color(neighbor)
+        neighbor_color = _get_color(board, neighbor)
         if neighbor_color == start_color:
             points, borders = _collect_region(neighbor, board, visited)
             all_points += points
@@ -106,6 +120,11 @@ def _collect_region(start_point, board, visited=None):
         else:
             all_borders.add(neighbor_color)
     return all_points, all_borders
+
+
+def get_territory_points(game_state):
+    territory = evaluate_territory(game_state.board)
+    return territory.black_territory, territory.white_territory
 
 
 def compute_game_result(game_state):

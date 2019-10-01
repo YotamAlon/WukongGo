@@ -41,32 +41,33 @@ class Controller(ScreenManager):
 
     def process_move(self, index):
         point = Point(*index)
-        if self.get_screen('game').mode == 'play':
+        game_screen = self.get_screen('game')
+        if game_screen.mode == 'play':
             if self.game.is_legal(point):
                 result = self.game.make_move(point=point)
                 if isinstance(result, GameResult):
-                    self.get_screen('game').show_game_finished_popup(result)
+                    game_screen.show_game_finished_popup(result)
                 else:
-                    self.get_screen('game').update_board(self.game.state.board)
-                    self.get_screen('game').update_score(self.game.state.score)
+                    game_screen.update_board(self.game.state.board)
+                    game_screen.update_score(self.game.state.score)
                     print("legal move:", point, "current score:", self.game.state.score)
 
             else:
-                self.get_screen('game').show_illegal_move_popup(point)
+                game_screen.show_illegal_move_popup(point)
                 print("illegal move: ", point, "current score:", self.game.state.score)
         else:
-            self.game.mark_dead_stone(point)
-            black_points, white_points = self.game.get_black_white_points()
-            self.get_screen('game').update_endgame([point], black_points, white_points)
+            dead = self.game.mark_dead_stone(point)
+            if dead is not None:
+                black_points, white_points = self.game.get_black_white_points()
+                game_screen.update_endgame(dead, black_points, white_points)
 
     def pass_turn(self):
-        #print(f'\n{self.game.to_sgf()}\n') This is currently not working
+        # print(f'\n{self.game.to_sgf()}\n') This is currently not working
         result = self.game.pass_turn()
+        print("legal move: pass, current score:", result)
         if isinstance(result, GameResult):
             self.get_screen('game').initiate_endgame(*self.game.get_black_white_points())
-            #self.get_screen('game').show_game_finished_popup(result)
-        else:
-            print("legal move: pass, current score:", result)
+            # self.get_screen('game').show_game_finished_popup(result)
 
     def resign(self):
         result = self.game.resign()
@@ -74,7 +75,7 @@ class Controller(ScreenManager):
         print('you have resigned')
 
     def navigate(self, signal):
-        self.transition.duration = 1
+        self.transition.duration = 0.4
         if signal == 'game':
             game = self.start_new_game()
             self.get_screen('game').initialize(game)

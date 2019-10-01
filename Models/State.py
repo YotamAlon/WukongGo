@@ -20,6 +20,9 @@ class State:
 
         self.last_move = move
 
+        self.endgame_mode = False
+        self.dead_groups = None
+
     def apply_move(self, move):
         if move.is_play:
             next_board = copy.deepcopy(self.board)
@@ -38,15 +41,17 @@ class State:
 
     def is_over(self):
         if self.last_move is None:
-            return False
-        if self.last_move.is_resign:
-            return True
-        second_last_move = self.previous_state.last_move
-        if second_last_move is None:
-            return False
-        return self.last_move.is_pass and second_last_move.is_pass
+            self.endgame_mode = False
+        elif self.last_move.is_resign:
+            self.endgame_mode = True
+        elif self.previous_state.last_move is None:
+            self.endgame_mode = False
+        else:
+            self.endgame_mode = self.last_move.is_pass and self.previous_state.last_move.is_pass
+        return self.endgame_mode
 
     def get_game_result(self):
+        assert self.endgame_mode
         return compute_game_result(self)
 
     @property

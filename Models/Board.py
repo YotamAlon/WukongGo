@@ -7,6 +7,7 @@ class GoGroup:
         self.color = color
         self.stones = frozenset(stones)
         self.liberties = frozenset(liberties)
+        self.is_dead = False  # endgame purposes
 
     def without_liberty(self, point):
         new_liberties = self.liberties - {point}
@@ -23,6 +24,13 @@ class GoGroup:
             self.color,
             combined_stones,
             (self.liberties | go_group.liberties) - combined_stones)
+
+    def mark_dead(self):
+        self.is_dead = not self.is_dead  # again, mark_dead -> change dead marking.
+
+    @property
+    def points(self):
+        return self.stones
 
     @property
     def num_liberties(self):
@@ -106,6 +114,9 @@ class Board:
         group = self._grid.get(point)
         return None if group is None else group.color
 
+    def get_group(self, point):
+        return self._grid.get(point)
+
     @property
     def grid(self):
         return [(point, self.get_color(point)) for point in self._grid]
@@ -115,8 +126,9 @@ class Board:
         assert self.num_cols == self.num_rows
         return self.num_cols
 
-    def get_group(self, point):
-        return self._grid.get(point)
+    @property
+    def endgame_dead_groups(self):
+        return [group for group in self._grid.values() if group.is_dead]
 
     @property
     def hash(self):
