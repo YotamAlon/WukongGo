@@ -17,6 +17,7 @@
         source: 'assets/images/' + root.color + '.png'
         pos: root.pos
         size: root.size
+        opacity: 0.5 if root.is_dead else 1
 
 
 <GameBoard>:
@@ -76,13 +77,13 @@
             Button:
                 text: 'Go back to menu'
                 on_release: app.controller.navigate('menu')
-                background_color: 0,0,0,1
+                background_color: 0, 0, 0, 1
             Button:
                 text: 'Pass'
                 on_release: app.controller.pass_turn()
-                background_color: 0,0,0,1
+                background_color: 0, 0, 0, 1
             Button:
                 text: 'Resign'
                 on_release: self.popup.open()
-                background_color: 0,0,0,1
+                background_color: 0, 0, 0, 1
                 popup: ConfirmPopup(title='Are you sure you want to resign?', text='This will cause you to lose.', callback=app.controller.resign)

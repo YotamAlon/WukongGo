@@ -10,12 +10,14 @@
             Button:
                 text: 'Yes'
                 on_release: root.answer(True)
+                background_color: 0, 0, 0, 1
             Button:
                 text: 'No'
                 on_release: root.answer(False)
+                background_color: 0, 0, 0, 1
 
 <NotifyPopup>:
-    size_hint: 0.5, 0.5
+    size_hint: 0.75, 0.3
     GridLayout:
         cols:1
         Label:
@@ -23,3 +25,4 @@
         Button:
             text: 'Ok'
             on_release: root.ok()
+            background_color: 0, 0, 0, 1
