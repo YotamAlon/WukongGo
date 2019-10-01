@@ -69,3 +69,9 @@ class Game:
     @property
     def size(self):
         return self.state.board.size
+
+    def get_black_white_points(self):
+        return [Point(1, 1)], [Point(2, 2)]
+
+    def mark_dead_stone(self, point):
+        pass

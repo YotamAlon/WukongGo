@@ -41,24 +41,30 @@ class Controller(ScreenManager):
 
     def process_move(self, index):
         point = Point(*index)
-        if self.game.is_legal(point):
-            result = self.game.make_move(point=point)
-            if isinstance(result, GameResult):
-                self.get_screen('game').show_game_finished_popup(result)
-            else:
-                self.get_screen('game').update_board(self.game.state.board)
-                self.get_screen('game').update_score(self.game.state.score)
-                print("legal move:", point, "current score:", self.game.state.score)
+        if self.get_screen('game').mode == 'play':
+            if self.game.is_legal(point):
+                result = self.game.make_move(point=point)
+                if isinstance(result, GameResult):
+                    self.get_screen('game').show_game_finished_popup(result)
+                else:
+                    self.get_screen('game').update_board(self.game.state.board)
+                    self.get_screen('game').update_score(self.game.state.score)
+                    print("legal move:", point, "current score:", self.game.state.score)
 
+            else:
+                self.get_screen('game').show_illegal_move_popup(point)
+                print("illegal move: ", point, "current score:", self.game.state.score)
         else:
-            self.get_screen('game').show_illegal_move_popup(point)
-            print("illegal move: ", point, "current score:", self.game.state.score)
+            self.game.mark_dead_stone(point)
+            black_points, white_points = self.game.get_black_white_points()
+            self.get_screen('game').update_endgame([point], black_points, white_points)
 
     def pass_turn(self):
         #print(f'\n{self.game.to_sgf()}\n') This is currently not working
         result = self.game.pass_turn()
         if isinstance(result, GameResult):
-            self.get_screen('game').show_game_finished_popup(result)
+            self.get_screen('game').initiate_endgame(*self.game.get_black_white_points())
+            #self.get_screen('game').show_game_finished_popup(result)
         else:
             print("legal move: pass, current score:", result)
 
