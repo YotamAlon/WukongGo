@@ -49,17 +49,18 @@ class Controller(ScreenManager):
                     game_screen.show_game_finished_popup(result)
                 else:
                     game_screen.update_board(self.game.state.board)
-                    game_screen.update_score(self.game.state.score)
-                    print("legal move:", point, "current score:", self.game.state.score)
+                    game_screen.update_score(self.game.score)
+                    print("legal move:", point, "current score:", self.game.score)
 
             else:
                 game_screen.show_illegal_move_popup(point)
-                print("illegal move: ", point, "current score:", self.game.state.score)
+                print("illegal move: ", point, "current score:", self.game.score)
         else:
             dead = self.game.mark_dead_stone(point)
             if dead is not None:
                 black_points, white_points = self.game.get_black_white_points()
                 game_screen.update_endgame(dead, black_points, white_points)
+            game_screen.update_score(self.game.score)
 
     def pass_turn(self):
         # print(f'\n{self.game.to_sgf()}\n') This is currently not working

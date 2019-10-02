@@ -5,7 +5,6 @@ from Models.Rule import get_rule_set_by_name
 from Models.Player import Player
 from Models.User import User
 from Models.Timer import Timer
-import Models.Scoring
 
 
 class Game:
@@ -73,12 +72,9 @@ class Game:
 
     def get_black_white_points(self):
         # return {Point(1, 1)}, {Point(2, 2)}
-        return Models.Scoring.get_territory_points(self.state)
+        self.state.change_dead_stone_marking(None)
+        return self.state.territory.black_territory, self.state.territory.white_territory
 
     def mark_dead_stone(self, point):
         # actually changes a group of stones from dead to alive and vice versa.
-        group = self.state.board.get_group(point)
-        if group is None:
-            return
-        group.mark_dead()
-        return [point for group in self.state.board.endgame_dead_groups for point in group.points]
+        return self.state.change_dead_stone_marking(point)

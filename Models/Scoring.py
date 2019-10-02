@@ -122,9 +122,8 @@ def _collect_region(start_point, board, visited=None):
     return all_points, all_borders
 
 
-def get_territory_points(game_state):
-    territory = evaluate_territory(game_state.board)
-    return territory.black_territory, territory.white_territory
+def get_territory(game_state):
+    return evaluate_territory(game_state.board)
 
 
 def compute_game_result(game_state):
