@@ -4,7 +4,7 @@ from kivy.properties import NumericProperty, StringProperty, ObjectProperty, Lis
 from kivy.uix.gridlayout import GridLayout
 from Models.BasicTypes import Point, Color
 from kivy.lang import Builder
-from Views.Fragments import NotifyPopup
+from app.Views.Fragments import NotifyPopup
 from kivy.graphics import Color as kColor, Rectangle, InstructionGroup
 
 
