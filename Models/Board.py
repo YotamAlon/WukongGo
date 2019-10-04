@@ -42,6 +42,9 @@ class GoGroup:
             self.stones == other.stones and \
             self.liberties == other.liberties
 
+    def __len__(self):
+        return len(self.stones)
+
 
 class Board:
     def __init__(self, num_rows, num_cols):
