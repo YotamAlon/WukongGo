@@ -1,5 +1,7 @@
 import enum
 from collections import namedtuple
+from peewee import Model, CharField, IntegerField
+from Models import db_proxy
 
 
 class Point(namedtuple('Point', 'row col')):
@@ -66,13 +68,50 @@ class Color(enum.Enum):
         raise Exception("Color sgf string should be W or B")
 
 
-class Move:
-    def __init__(self, point=None, is_pass=False, is_resign=False):
+class Move(Model):
+    _row = IntegerField(null=True)
+    _col = IntegerField(null=True)
+    _type = CharField()
+
+    class Meta:
+        db = db_proxy
+
+    def __init__(self, point: Point = None, is_pass: bool = False, is_resign: bool = False):
         assert (point is not None) ^ is_pass ^ is_resign
+        super(Move, self).__init__()
         self.point = point
-        self.is_play = (self.point is not None)
-        self.is_pass = is_pass
-        self.is_resign = is_resign
+        if is_pass:
+            self._type = 'pass'
+        elif is_resign:
+            self._type = 'resign'
+        else:
+            self._type = 'play'
+
+    @property
+    def point(self) -> Point:
+        if self._row is None and self._col is None:
+            return None
+        return Point(self._row, self._col)
+
+    @point.setter
+    def point(self, value: Point) -> None:
+        if value is None:
+            self._row = self._col = None
+        else:
+            self._row = value.row
+            self._col = value.col
+
+    @property
+    def is_play(self):
+        return self._type == 'play'
+
+    @property
+    def is_pass(self):
+        return self._type == 'pass'
+
+    @property
+    def is_resign(self):
+        return self._type == 'resign'
 
     @staticmethod
     def play(point):

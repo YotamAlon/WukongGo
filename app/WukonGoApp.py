@@ -12,6 +12,8 @@ from Models.Player import Player
 from Models.BasicTypes import Point
 from Models.Rule import get_japanese_rule_set
 from Models.Scoring import GameResult
+from Models import db_proxy
+from peewee import SqliteDatabase
 
 
 class Controller(ScreenManager):
@@ -20,17 +22,18 @@ class Controller(ScreenManager):
         self.game = None
 
     def initialize(self):
+        self.initialize_db()
+
         self.add_widget(MenuScreen(name='menu'))
         self.add_widget(GameScreen(name='game'))
         self.add_widget(SettingsScreen(name='settings'))
-
-        self.initialize_db()
 
         self.switch_to(self.get_screen('menu'))
 
     @staticmethod
     def initialize_db():
-        pass
+        db = SqliteDatabase('wukongo.db')
+        db_proxy.initialize(db)
 
     def start_new_game(self):
         users = [User(1, 1), User(2, 2)]
