@@ -18,15 +18,16 @@ class Game(Model):
     komi = FloatField()
 
     class Meta:
-        db = db_proxy
+        database = db_proxy
 
-    def __init__(self, players: Dict[Color, User], timer, state: State, rule_set: RuleSet):
+    def __init__(self, players: Dict[Color, User], timer, state: State, rule_set: RuleSet, size: int):
         super(Game, self).__init__()
         self.players = players
         self.timer = timer
         self.state = state
-        self.rule_set = rule_set.name
+        self.rule_set = rule_set
         self.komi = rule_set.komi.w_score
+        self.size = size
 
     @property
     def players(self) -> Dict[Color, User]:
@@ -57,7 +58,7 @@ class Game(Model):
     @classmethod
     def new_game(cls, size, rule_set, players, timer):
         state = State.new_game(size, rule_set)
-        return Game(players, timer, state, rule_set)
+        return Game(players, timer, state, rule_set, size)
 
     def is_legal(self, point):
         assert isinstance(point, Point)
@@ -122,7 +123,7 @@ class GameUser(Model):
     user = ForeignKeyField(User)
 
     class Meta:
-        db = db_proxy
+        database = db_proxy
         indexes = ((('game', 'user'), True), )
 
 
@@ -131,5 +132,5 @@ class GameMove(Model):
     move = ForeignKeyField(Move)
 
     class Meta:
-        db = db_proxy
+        database = db_proxy
         indexes = ((('game', 'move'), True), )

@@ -74,7 +74,7 @@ class Move(Model):
     _type = CharField()
 
     class Meta:
-        db = db_proxy
+        database = db_proxy
 
     def __init__(self, point: Point = None, is_pass: bool = False, is_resign: bool = False):
         assert (point is not None) ^ is_pass ^ is_resign
