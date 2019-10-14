@@ -2,7 +2,6 @@ from Models.State import State
 from Models.BasicTypes import Move, Point, Color
 from Models.SGF import SGF
 from Models.Rule import get_rule_set_by_name, RuleSet
-from Models.Player import Player
 from Models.User import User
 from Models.Timer import Timer
 from peewee import Model, ForeignKeyField, IntegerField, CharField, FloatField
@@ -71,7 +70,8 @@ class Game(Model):
     def _make_move(self, move):
         self.state = self.state.apply_move(move)
         if self.state.is_over():
-            return self.state.get_game_result()
+            return move, self.state.get_game_result()
+        return move, None
 
     def pass_turn(self):
         return self._make_move(Move.pass_turn())
@@ -81,6 +81,10 @@ class Game(Model):
 
     def to_sgf(self):
         return SGF(self)
+
+    @property
+    def sgf_str(self):
+        return str(self.to_sgf())
 
     @staticmethod
     def _from_sgf(sgf):

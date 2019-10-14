@@ -1,6 +1,8 @@
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager
+from kivy.properties import StringProperty
 from app.Views.Game import GameScreen
 from app.Views.Menu import MenuScreen
 from Models.BasicTypes import Color
@@ -8,21 +10,48 @@ from app.Views.Settings import SettingsScreen
 from Models.Game import Game
 from Models.User import User
 from Models.Timer import Timer
-from Models.Player import Player
-from Models.BasicTypes import Point
+from Models.BasicTypes import Point, Move
 from Models.Rule import get_japanese_rule_set
 from Models.Scoring import GameResult
 from Models import db_proxy
 from peewee import SqliteDatabase
+import socketio
+import asyncio
+from functools import wraps
+
+
+def run_async(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        return asyncio.create_task(func(*args, **kwargs))
+
+    return inner
+
+
+class API(socketio.AsyncClient):
+    @run_async
+    async def connect(self):
+        await super(API, self).connect('http://wukongo.ddns.net:5000')
+
+    @run_async
+    async def send_move(self, move: Move):
+        await super(API, self).emit('move_made', {'move_sgf': move.sgf_str})
+
+    @run_async
+    async def start_game(self, game: Game):
+        await super(API, self).emit('game_started', {'game_sgf': game.sgf_str})
 
 
 class Controller(ScreenManager):
-    def __init__(self):
-        super(Controller, self).__init__()
-        self.game = None
+    game = None
+    api = API()
+    black_name = StringProperty('Black')
+    white_name = StringProperty('White')
 
-    def initialize(self):
+    async def initialize(self):
         self.initialize_db()
+
+        self.api.connect()
 
         self.add_widget(MenuScreen(name='menu'))
         self.add_widget(GameScreen(name='game'))
@@ -36,18 +65,21 @@ class Controller(ScreenManager):
         db_proxy.initialize(db)
 
     def start_new_game(self):
-        users = [User(1, 1), User(2, 2)]
+        users = [User.get_or_create(display_name=self.black_name, defaults={'token': '1'})[0],
+                 User.get_or_create(display_name=self.white_name, defaults={'token': '2'})[0]]
         timer = Timer()
-        players = {Color.black: Player(users[0], Color.black), Color.white: Player(users[1], Color.white)}
+        players = {Color.black: users[0], Color.white: users[1]}
         self.game = Game.new_game(size=9, rule_set=get_japanese_rule_set(), players=players, timer=timer)
-        return self.game  # a bit weird, why are we assigning it to self and returning it? one should be enough.
+        self.api.start_game(self.game)
+        return self.game
 
     def process_move(self, index):
         point = Point(*index)
         game_screen = self.get_screen('game')
         if game_screen.mode == 'play':
             if self.game.is_legal(point):
-                result = self.game.make_move(point=point)
+                move, result = self.game.make_move(point=point)
+                self.api.send_move(move)
                 if isinstance(result, GameResult):
                     game_screen.show_game_finished_popup(result)
                 else:
@@ -78,6 +110,11 @@ class Controller(ScreenManager):
         self.get_screen('game').show_game_finished_popup(result)
         print('you have resigned')
 
+    @staticmethod
+    @api.event
+    def receive_move(move_sgf):
+        print(Move.from_sgf(move_sgf))
+
     def navigate(self, signal):
         self.transition.duration = 0.4
         if signal == 'game':
@@ -107,15 +144,16 @@ class Controller(ScreenManager):
 class WukonGoApp(App):
     controller = Controller()
 
-    def __init__(self):
-        super(WukonGoApp, self).__init__()
-        self.controller.initialize()
-
     def build(self):
         Window.size = (400, 600)
         return self.controller
 
+    async def run(self):
+        await self.controller.initialize()
+        await self.async_run()
+
 
 if __name__ == "__main__":
+    Clock.init_async_lib('asyncio')
     app = WukonGoApp()
-    app.run()
+    asyncio.run(app.run())
