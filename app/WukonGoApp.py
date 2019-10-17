@@ -34,8 +34,8 @@ class API(socketio.AsyncClient):
         await super(API, self).connect('http://wukongo.ddns.net:5000')
 
     @run_async
-    async def send_move(self, move: Move):
-        await super(API, self).emit('move_made', {'move_sgf': move.sgf_str})
+    async def send_move(self, game: Game, move: Move):
+        await super(API, self).emit('move_made', {'move_sgf': move.sgf_str, 'game_uuid': game.uuid})
 
     @run_async
     async def start_game(self, game: Game):
@@ -70,6 +70,7 @@ class Controller(ScreenManager):
         timer = Timer()
         players = {Color.black: users[0], Color.white: users[1]}
         self.game = Game.new_game(size=9, rule_set=get_japanese_rule_set(), players=players, timer=timer)
+        self.game.save()
         self.api.start_game(self.game)
         return self.game
 
@@ -79,7 +80,7 @@ class Controller(ScreenManager):
         if game_screen.mode == 'play':
             if self.game.is_legal(point):
                 move, result = self.game.make_move(point=point)
-                self.api.send_move(move)
+                self.api.send_move(game, move)
                 if isinstance(result, GameResult):
                     game_screen.show_game_finished_popup(result)
                 else:

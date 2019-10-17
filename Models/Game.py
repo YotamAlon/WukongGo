@@ -4,12 +4,14 @@ from Models.SGF import SGF
 from Models.Rule import get_rule_set_by_name, RuleSet
 from Models.User import User
 from Models.Timer import Timer
-from peewee import Model, ForeignKeyField, IntegerField, CharField, FloatField
+from peewee import Model, ForeignKeyField, IntegerField, CharField, FloatField, UUIDField
 from typing import Dict, List
 from Models import db_proxy
+import uuid
 
 
 class Game(Model):
+    uuid = UUIDField(default=uuid.uuid4())
     black = ForeignKeyField(User)
     white = ForeignKeyField(User)
     size = IntegerField()
@@ -19,14 +21,19 @@ class Game(Model):
     class Meta:
         database = db_proxy
 
-    def __init__(self, players: Dict[Color, User], timer, state: State, rule_set: RuleSet, size: int):
+    def __init__(self, players: Dict[Color, User], timer, state: State, rule_set: RuleSet, size: int, uuid=None):
         super(Game, self).__init__()
-        self.players = players
+        self.black = players[Color.black]
+        self.white = players[Color.white]
+        GameUser(game=self, user=self.black).save()
+        GameUser(game=self, user=self.white).save()
         self.timer = timer
         self.state = state
         self.rule_set = rule_set
         self.komi = rule_set.komi.w_score
         self.size = size
+        if uuid is not None:
+            self.uuid = uuid
 
     @property
     def players(self) -> Dict[Color, User]:
@@ -55,9 +62,9 @@ class Game(Model):
     #     GameUser.insert_many([{'game': self, 'user': user} for user in value]).on_conflict_ignore()
 
     @classmethod
-    def new_game(cls, size, rule_set, players, timer):
+    def new_game(cls, size, rule_set, players, timer, uuid=None):
         state = State.new_game(size, rule_set)
-        return Game(players, timer, state, rule_set, size)
+        return Game(players, timer, state, rule_set, size, uuid=uuid)
 
     def is_legal(self, point):
         assert isinstance(point, Point)
@@ -67,7 +74,9 @@ class Game(Model):
     def make_move(self, point):
         return self._make_move(Move.play(point))
 
-    def _make_move(self, move):
+    def _make_move(self, move: Move):
+        move.save()
+        GameMove(move=move, game=self).save()
         self.state = self.state.apply_move(move)
         if self.state.is_over():
             return move, self.state.get_game_result()
@@ -89,11 +98,12 @@ class Game(Model):
     @staticmethod
     def _from_sgf(sgf):
         assert isinstance(sgf, SGF)
+        uuid = sgf.header.get('UD', None)
         size = sgf.header['SZ']
         rules = get_rule_set_by_name(sgf.header['RU'])
-        players = {Color.black: Player(User(sgf.header['BP'], 1), Color.black),
-                   Color.white: Player(User(sgf.header['WP'], 2), Color.white)}
-        game = Game.new_game(size, rules, players, Timer())
+        players = {Color.black: User.get_or_create(display_name=sgf.header['BP'], defaults={'token': '1'})[0],
+                   Color.white: User.get_or_create(display_name=sgf.header['WP'], defaults={'token': '2'})[0]}
+        game = Game.new_game(size, rules, players, Timer(), uuid=uuid)
 
         for move in sgf.moves:
             game.make_move(Move.from_sgf(move[game.state.next_color.sgf_str]))

@@ -27,10 +27,11 @@ class SGF:
             'FF': 4,  # FF[4] means SGF version 4.
             'GM': 1,  # GM[1] means that the game is "go"
             'SZ': game.size,
-            'BP': game.players[Color.black].display_name,
-            'WP': game.players[Color.white].display_name,
+            'BP': game.black.display_name,
+            'WP': game.white.display_name,
             'RU': game.state.rule_set.name,
-            'KM': game.state.rule_set.komi.w_score
+            'KM': game.state.rule_set.komi.w_score,
+            'UD': game.uuid,
         }
 
         return header
