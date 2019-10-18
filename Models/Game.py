@@ -11,7 +11,7 @@ import uuid
 
 
 class Game(Model):
-    uuid = UUIDField(default=uuid.uuid4())
+    uuid = CharField()
     black = ForeignKeyField(User)
     white = ForeignKeyField(User)
     size = IntegerField()
@@ -21,19 +21,12 @@ class Game(Model):
     class Meta:
         database = db_proxy
 
-    def __init__(self, players: Dict[Color, User], timer, state: State, rule_set: RuleSet, size: int, uuid=None):
-        super(Game, self).__init__()
-        self.black = players[Color.black]
-        self.white = players[Color.white]
+    def save(self, **kwargs):
+        if self.uuid is None:
+            self.uuid = str(uuid.uuid4())
+        super(Game, self).save(**kwargs)
         GameUser(game=self, user=self.black).save()
         GameUser(game=self, user=self.white).save()
-        self.timer = timer
-        self.state = state
-        self.rule_set = rule_set
-        self.komi = rule_set.komi.w_score
-        self.size = size
-        if uuid is not None:
-            self.uuid = uuid
 
     @property
     def players(self) -> Dict[Color, User]:
@@ -51,6 +44,7 @@ class Game(Model):
     @rule_set.setter
     def rule_set(self, value: RuleSet) -> None:
         self.rule_set_name = value.name
+        self.komi = value.komi.w_score
 
     @property
     def users(self) -> List[User]:
@@ -64,7 +58,7 @@ class Game(Model):
     @classmethod
     def new_game(cls, size, rule_set, players, timer, uuid=None):
         state = State.new_game(size, rule_set)
-        return Game(players, timer, state, rule_set, size, uuid=uuid)
+        return Game(players=players, timer=timer, state=state, rule_set=rule_set, size=size, uuid=uuid)
 
     def is_legal(self, point):
         assert isinstance(point, Point)
@@ -103,7 +97,7 @@ class Game(Model):
         rules = get_rule_set_by_name(sgf.header['RU'])
         players = {Color.black: User.get_or_create(display_name=sgf.header['BP'], defaults={'token': '1'})[0],
                    Color.white: User.get_or_create(display_name=sgf.header['WP'], defaults={'token': '2'})[0]}
-        game = Game.new_game(size, rules, players, Timer(), uuid=uuid)
+        game = Game.new_game(int(size), rules, players, Timer(), uuid=uuid)
 
         for move in sgf.moves:
             game.make_move(Move.from_sgf(move[game.state.next_color.sgf_str]))

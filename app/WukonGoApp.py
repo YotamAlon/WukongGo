@@ -41,6 +41,10 @@ class API(socketio.AsyncClient):
     async def start_game(self, game: Game):
         await super(API, self).emit('game_started', {'game_sgf': game.sgf_str})
 
+    @run_async
+    async def disconnect(self):
+        await super(API, self).disconnect()
+
 
 class Controller(ScreenManager):
     game = None
@@ -80,7 +84,7 @@ class Controller(ScreenManager):
         if game_screen.mode == 'play':
             if self.game.is_legal(point):
                 move, result = self.game.make_move(point=point)
-                self.api.send_move(game, move)
+                self.api.send_move(self.game, move)
                 if isinstance(result, GameResult):
                     game_screen.show_game_finished_popup(result)
                 else:
