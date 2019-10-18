@@ -1,2 +1,3 @@
-peewee
 kivy
+python-socketio
+eventlet
