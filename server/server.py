@@ -1,5 +1,9 @@
 import socketio
 import eventlet
+from peewee import SqliteDatabase
+from Models import db_proxy
+from Models.Game import Game, GameMove
+from Models.BasicTypes import Move
 
 
 class WukongoServer(socketio.Server):
@@ -14,6 +18,9 @@ class WukongoServer(socketio.Server):
 sio = WukongoServer()
 app = socketio.WSGIApp(sio)
 
+db = SqliteDatabase('wukongo.db')
+db_proxy.initialize(db)
+
 
 @sio.event
 def connect(sid, environ):
@@ -21,13 +28,22 @@ def connect(sid, environ):
 
 
 @sio.event
-def disconnect(sid):
-    print('disconnected', sid)
+def game_started(sid, data):
+    game = Game.from_sgf(data['game_sgf'])
+    game.save()
 
 
 @sio.event
-def stone_placed(sid, data):
-    pass
+def move_made(sid, data):
+    move = Move.from_sgf(data['move_sgf'])
+    move.save()
+
+    GameMove(game=Game.get(uuid=data['game_uuid']), move=move).save()
+
+
+@sio.event
+def disconnect(sid):
+    print('disconnected', sid)
 
 
 if __name__ == '__main__':
