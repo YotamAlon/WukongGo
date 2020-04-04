@@ -23,6 +23,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        python -m pip install pygments docutils pillow
+        sudo apt-get install python-setuptools python-pygame python-opengl python-enchant python-dev build-essential python-pip libgl1-mesa-dev libgles2-mesa-dev zlib1g-dev
+        python -m pip install --upgrade Cython==0.29.10
+        git clone git://github.com/kivy/kivy.git
+        cd kivy
+        python setup.py build_ext --inplace -f
+        python -m pip install
         pip install -r requirements.txt
     - name: Lint with flake8
       run: |
