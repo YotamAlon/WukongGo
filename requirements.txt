@@ -1,3 +1,4 @@
-kivy
+kivy>=2.0
 python-socketio
 eventlet
+peewee
