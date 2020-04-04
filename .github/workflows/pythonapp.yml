@@ -25,7 +25,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pygments docutils pillow
         sudo apt-get install python-setuptools python-pygame python-opengl python-enchant python-dev build-essential python-pip libgl1-mesa-dev libgles2-mesa-dev zlib1g-dev
-        python -m pip install --upgrade Cython==0.29.10
+        python -m pip install --upgrade Cython==0.29.10 --install-option="--no-cython-compile"
         git clone git://github.com/kivy/kivy.git
         cd kivy
         python setup.py build_ext --inplace -f
