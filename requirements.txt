@@ -1,4 +1,2 @@
-kivy>=2.0
-python-socketio
-eventlet
-peewee
+kivy==2.1.0
+peewee==3.16.0

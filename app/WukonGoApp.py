@@ -15,7 +15,6 @@ from Models.Rule import get_japanese_rule_set
 from Models.Scoring import GameResult
 from Models import db_proxy
 from peewee import SqliteDatabase
-import socketio
 import asyncio
 from functools import wraps
 
@@ -28,34 +27,34 @@ def run_async(func):
     return inner
 
 
-class API(socketio.AsyncClient):
-    @run_async
-    async def connect(self):
-        await super(API, self).connect('http://wukongo.ddns.net:5000')
-
-    @run_async
-    async def send_move(self, game: Game, move: Move):
-        await super(API, self).emit('move_made', {'move_sgf': move.sgf_str, 'game_uuid': game.uuid})
-
-    @run_async
-    async def start_game(self, game: Game):
-        await super(API, self).emit('game_started', {'game_sgf': game.sgf_str})
-
-    @run_async
-    async def disconnect(self):
-        await super(API, self).disconnect()
+# class API(socketio.AsyncClient):
+#     @run_async
+#     async def connect(self):
+#         await super(API, self).connect('http://wukongo.ddns.net:5000')
+#
+#     @run_async
+#     async def send_move(self, game: Game, move: Move):
+#         await super(API, self).emit('move_made', {'move_sgf': move.sgf_str, 'game_uuid': game.uuid})
+#
+#     @run_async
+#     async def start_game(self, game: Game):
+#         await super(API, self).emit('game_started', {'game_sgf': game.sgf_str})
+#
+#     @run_async
+#     async def disconnect(self):
+#         await super(API, self).disconnect()
 
 
 class Controller(ScreenManager):
     game = None
-    api = API()
+    # api = API()
     black_name = StringProperty('Black')
     white_name = StringProperty('White')
 
     async def initialize(self):
         self.initialize_db()
 
-        self.api.connect()
+        # self.api.connect()
 
         self.add_widget(MenuScreen(name='menu'))
         self.add_widget(GameScreen(name='game'))
@@ -75,7 +74,7 @@ class Controller(ScreenManager):
         players = {Color.black: users[0], Color.white: users[1]}
         self.game = Game.new_game(size=9, rule_set=get_japanese_rule_set(), players=players, timer=timer)
         self.game.save()
-        self.api.start_game(self.game)
+        # self.api.start_game(self.game)
         return self.game
 
     def process_move(self, index):
@@ -84,7 +83,7 @@ class Controller(ScreenManager):
         if game_screen.mode == 'play':
             if self.game.is_legal(point):
                 move, result = self.game.make_move(point=point)
-                self.api.send_move(self.game, move)
+                # self.api.send_move(self.game, move)
                 if isinstance(result, GameResult):
                     game_screen.show_game_finished_popup(result)
                 else:
@@ -115,10 +114,10 @@ class Controller(ScreenManager):
         self.get_screen('game').show_game_finished_popup(result)
         print('you have resigned')
 
-    @staticmethod
-    @api.event
-    def receive_move(move_sgf):
-        print(Move.from_sgf(move_sgf))
+    # @staticmethod
+    # @api.event
+    # def receive_move(move_sgf):
+    #     print(Move.from_sgf(move_sgf))
 
     def navigate(self, signal):
         self.transition.duration = 0.4
