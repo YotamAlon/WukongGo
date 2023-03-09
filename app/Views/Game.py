@@ -1,6 +1,7 @@
+from __future__ import annotations
 from kivy.uix.screenmanager import Screen
 from kivy.uix.button import Button
-from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty, BooleanProperty
+from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty, BooleanProperty, AliasProperty
 from kivy.uix.gridlayout import GridLayout
 from Models.BasicTypes import Point, Color
 from kivy.lang import Builder
@@ -8,11 +9,29 @@ from app.Views.Fragments import NotifyPopup
 from kivy.graphics import Color as kColor, Rectangle, InstructionGroup
 
 
+def get_horizontal_line_points(piece: Piece) -> tuple[int, int, int, int]:
+    startx = piece.pos[0] + (piece.size[0] / 2 if piece.index[1] == 1 else 0)
+    starty = piece.pos[1] + (piece.size[1] / 2)
+    finalx = piece.pos[0] + piece.size[0] / (2 if piece.index[1] == piece.board_size else 1)
+    finaly = piece.pos[1] + (piece.size[1] / 2)
+    return startx, starty, finalx, finaly
+
+
+def get_vertical_line_points(piece: Piece) -> tuple[int, int, int, int]:
+    startx = piece.pos[0] + (piece.size[0] / 2)
+    starty = piece.pos[1] + (piece.size[1] / 2 if piece.index[0] == piece.board_size else 0)
+    finalx = piece.pos[0] + (piece.size[0] / 2)
+    finaly = piece.pos[1] + piece.size[1] / (2 if piece.index[0] == 1 else 1)
+    return startx, starty, finalx, finaly
+
+
 class Piece(Button):
     index = ListProperty(None)
     color = StringProperty('blank')
     board_size = NumericProperty(None)
     is_dead = BooleanProperty(False)
+    horizontal_line_points = AliasProperty(get_horizontal_line_points, None, cache=True, bind=['pos', 'size'])
+    vertical_line_points = AliasProperty(get_vertical_line_points, None, cache=True, bind=['pos', 'size'])
     marker = None
 
     def place_piece(self, color):
