@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import functools
+
 from kivy.uix.screenmanager import Screen
 from kivy.uix.button import Button
 from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty, BooleanProperty, AliasProperty
@@ -6,23 +9,7 @@ from kivy.uix.gridlayout import GridLayout
 from Models.BasicTypes import Point, Color
 from kivy.lang import Builder
 from app.Views.Fragments import NotifyPopup
-from kivy.graphics import Color as kColor, Rectangle, InstructionGroup
-
-
-def get_horizontal_line_points(piece: Piece) -> tuple[int, int, int, int]:
-    startx = piece.pos[0] + (piece.size[0] / 2 if piece.index[1] == 1 else 0)
-    starty = piece.pos[1] + (piece.size[1] / 2)
-    finalx = piece.pos[0] + piece.size[0] / (2 if piece.index[1] == piece.board_size else 1)
-    finaly = piece.pos[1] + (piece.size[1] / 2)
-    return startx, starty, finalx, finaly
-
-
-def get_vertical_line_points(piece: Piece) -> tuple[int, int, int, int]:
-    startx = piece.pos[0] + (piece.size[0] / 2)
-    starty = piece.pos[1] + (piece.size[1] / 2 if piece.index[0] == piece.board_size else 0)
-    finalx = piece.pos[0] + (piece.size[0] / 2)
-    finaly = piece.pos[1] + piece.size[1] / (2 if piece.index[0] == 1 else 1)
-    return startx, starty, finalx, finaly
+from kivy.graphics import Color as kColor, Rectangle, InstructionGroup, Line
 
 
 class Piece(Button):
@@ -30,9 +17,10 @@ class Piece(Button):
     color = StringProperty('blank')
     board_size = NumericProperty(None)
     is_dead = BooleanProperty(False)
-    horizontal_line_points = AliasProperty(get_horizontal_line_points, None, cache=True, bind=['pos', 'size'])
-    vertical_line_points = AliasProperty(get_vertical_line_points, None, cache=True, bind=['pos', 'size'])
-    marker = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.marker = None
 
     def place_piece(self, color):
         if color is None:
@@ -54,6 +42,38 @@ class Piece(Button):
             self.canvas.add(self.marker)
 
 
+class HorizontalLine(Line):
+    def __init__(self, index: int):
+        super().__init__()
+        self.index = index
+
+    def update_points(self, game_board: GameBoard, _):
+        line_margin = game_board.size[0] / game_board.board_size
+        edge_margin = line_margin / 2
+        self.points = [
+            game_board.pos[0] + edge_margin,
+            game_board.pos[1] + edge_margin + (line_margin * self.index),
+            game_board.pos[0] + game_board.size[0] - edge_margin,
+            game_board.pos[1] + edge_margin + (line_margin * self.index),
+        ]
+
+
+class VerticalLine(Line):
+    def __init__(self, index: int):
+        super().__init__()
+        self.index = index
+
+    def update_points(self, game_board: GameBoard, _):
+        line_margin = game_board.size[0] / game_board.board_size
+        edge_margin = line_margin / 2
+        self.points = [
+            game_board.pos[0] + edge_margin + (line_margin * self.index),
+            game_board.pos[1] + edge_margin,
+            game_board.pos[0] + edge_margin + (line_margin * self.index),
+            game_board.pos[1] + game_board.size[1] - edge_margin,
+        ]
+
+
 class GameBoard(GridLayout):
     grid = {}
     board_size = 0
@@ -68,6 +88,19 @@ class GameBoard(GridLayout):
                 point = Point(i, j)
                 self.grid[point] = Piece(index=point, board_size=board_size)
                 self.add_widget(self.grid[point])
+
+    def on_kv_post(self, base_widget):
+        board_lines = InstructionGroup()
+        board_lines.add(kColor(0, 0, 0, 1))
+        for i in range(self.board_size):
+            horizontal_line = HorizontalLine(i)
+            self.bind(pos=horizontal_line.update_points, size=horizontal_line.update_points)
+            board_lines.add(horizontal_line)
+
+            vertical_line = VerticalLine(i)
+            self.bind(pos=vertical_line.update_points, size=vertical_line.update_points)
+            board_lines.add(vertical_line)
+        self.canvas.add(board_lines)
 
     def update(self, board):
         for point in board.grid:

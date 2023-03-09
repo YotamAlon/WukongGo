@@ -4,15 +4,6 @@
     on_press:
         app.controller.process_move(self.index)
     background_color: 0, 0, 0, 0
-    canvas.before:
-        Color:
-            rgb: 0, 0, 0, 1
-        Line:
-            id: horizontal_line
-            points: root.horizontal_line_points
-        Line:
-            id: vertical_line
-            points: root.vertical_line_points
     Image:
         source: 'assets/images/' + root.color + '.png'
         pos: root.pos
