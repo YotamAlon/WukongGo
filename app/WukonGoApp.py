@@ -69,12 +69,12 @@ class Controller(ScreenManager):
         db = SqliteDatabase('wukongo.db')
         db_proxy.initialize(db)
 
-    def start_new_game(self):
+    def start_new_game(self, board_size: int):
         users = [User.get_or_create(display_name=self.black_name, defaults={'token': '1'})[0],
                  User.get_or_create(display_name=self.white_name, defaults={'token': '2'})[0]]
         timer = Timer()
         players = {Color.black: users[0], Color.white: users[1]}
-        self.game = Game.new_game(size=9, rule_set=get_japanese_rule_set(), players=players, timer=timer)
+        self.game = Game.new_game(size=board_size, rule_set=get_japanese_rule_set(), players=players, timer=timer)
         self.game.save()
         # self.api.start_game(self.game)
         return self.game
@@ -111,7 +111,9 @@ class Controller(ScreenManager):
             self.get_screen('game').initiate_endgame(*self.game.get_black_white_points())
             # self.get_screen('game').show_game_finished_popup(result)
 
-    def resign(self):
+    def resign(self, did_resign: bool):
+        if not did_resign:
+            return
         result = self.game.resign()
         self.get_screen('game').show_game_finished_popup(result)
         print('you have resigned')
@@ -121,10 +123,11 @@ class Controller(ScreenManager):
     # def receive_move(move_sgf):
     #     print(Move.from_sgf(move_sgf))
 
-    def navigate(self, signal):
+    def navigate(self, signal, **kwargs):
         self.transition.duration = 0.4
         if signal == 'game':
-            game = self.start_new_game()
+            board_size = kwargs['board_size']
+            game = self.start_new_game(board_size)
             self.get_screen('game').initialize(game)
             self.transition.direction = 'down'
             self.current = 'game'

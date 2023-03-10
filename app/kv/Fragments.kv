@@ -9,11 +9,11 @@
             size_hint_y: None
             Button:
                 text: 'Yes'
-                on_release: root.answer(True)
+                on_release: root.dismiss(); root.callback(True)
                 background_color: 0, 0, 0, 1
             Button:
                 text: 'No'
-                on_release: root.answer(False)
+                on_release: root.dismiss(); self.callback(False)
                 background_color: 0, 0, 0, 1
 
 <NotifyPopup>:
@@ -24,5 +24,22 @@
             text: root.text
         Button:
             text: 'Ok'
-            on_release: root.ok()
+            on_release: root.dismiss()
             background_color: 0, 0, 0, 1
+
+
+<BoardSizeChoicePopup>:
+    title: 'Select Board Size:'
+    size_hint: None, None
+    size: 200, 250
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            text: '9 X 9'
+            on_release: root.dismiss(); root.callback(9)
+        Button:
+            text: '13 X 13'
+            on_release: root.dismiss(); root.callback(13)
+        Button:
+            text: '19 X 19'
+            on_release: root.dismiss(); root.callback(19)

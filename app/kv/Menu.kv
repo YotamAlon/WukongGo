@@ -1,3 +1,5 @@
+#:import BoardSizeChoicePopup app.Views.Fragments.BoardSizeChoicePopup
+
 <MenuScreen>:
     background_color: 1, 1, 1, 1
     canvas.before:
@@ -26,7 +28,8 @@
             Button:
                 background_color: 0, 0, 0, 1
                 text: 'New game'
-                on_release: app.controller.navigate('game')
+                on_release: self.popup.open()
+                popup: BoardSizeChoicePopup(callback=lambda s: app.controller.navigate('game', board_size=s))
             Button:
                 background_color: 0, 0, 0, 1
                 text: 'Settings'
