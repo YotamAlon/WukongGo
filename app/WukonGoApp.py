@@ -16,7 +16,7 @@ from Models.Rule import get_japanese_rule_set
 from Models.Scoring import GameResult
 from Models.Timer import Timer
 from Models.User import User
-from app.Views.Game import GameScreen
+from app.Views.Game import GameScreen, GameMode
 from app.Views.Menu import MenuScreen
 from app.Views.Settings import SettingsScreen
 
@@ -82,7 +82,7 @@ class Controller(ScreenManager):
     def process_move(self, index):
         point = Point(*index)
         game_screen = self.get_screen('game')
-        if game_screen.mode == 'play':
+        if game_screen.mode == GameMode.play:
             if self.game.is_legal(point):
                 move, result = self.game.make_move(point=point)
                 # self.api.send_move(self.game, move)

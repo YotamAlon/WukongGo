@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import enum
+
 from kivy.graphics import Color as kColor, Rectangle, InstructionGroup, Line
 from kivy.lang import Builder
-from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty, BooleanProperty
+from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty, BooleanProperty, \
+    OptionProperty
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.screenmanager import Screen
@@ -119,8 +122,13 @@ class GameBoard(GridLayout):
             piece.is_dead = (dead_points is not None and point in dead_points)
 
 
+class GameMode(enum.Enum):
+    play = 'play'
+    count = 'count'
+
+
 class GameScreen(Screen):
-    mode = StringProperty('play')
+    mode = OptionProperty(defaultvalue=GameMode.play, options=list(GameMode))
     board_container = ObjectProperty(None)
     board = ObjectProperty(None)
     score = StringProperty('0 - 0')
@@ -131,6 +139,7 @@ class GameScreen(Screen):
         super(GameScreen, self).__init__(name=kwargs['name'])
 
     def initialize(self, game):
+        self.mode = GameMode.play
         self.board = GameBoard(game.size)
         self.board_container.add_widget(self.board)
 
@@ -141,7 +150,7 @@ class GameScreen(Screen):
         self.board.update(board)
 
     def initiate_endgame(self, black_points=None, white_points=None):
-        self.mode = 'count'
+        self.mode = GameMode.count
         self.board.update_point_markers(black_points, white_points)
 
     def update_endgame(self, dead_points=None, black_points=None, white_points=None):
