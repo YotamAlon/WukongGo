@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from Models.BasicTypes import Color, Point
-from Models.Board import Board
-from Models.State import State
+from Models.Board import Board, GoGroup
 
 
 class Score:
@@ -15,6 +14,9 @@ class Score:
         w_score = score_dict[Color.white]
         b_score = score_dict[Color.black]
         return Score(w_score, b_score)
+
+    def with_captured_group(self, group: GoGroup) -> Score:
+        return self + Score.from_dict(score_dict={group.color.other: len(group.stones), group.color: 0})
 
     def __str__(self) -> str:
         return f'black: {self.b_score}, white: {self.w_score}'
@@ -127,12 +129,8 @@ def _collect_region(start_point: Point, board: Board, visited: set[Point] = None
     return all_points, all_borders
 
 
-def get_territory(game_state: State) -> Territory:
-    return evaluate_territory(game_state.board)
-
-
-def compute_game_result(game_state: State) -> GameResult:
-    territory = evaluate_territory(game_state.board)
+def compute_game_result(game_board: Board) -> GameResult:
+    territory = evaluate_territory(game_board)
     return GameResult(
         b_score=territory.num_black_territory + territory.num_black_stones,
         w_score=territory.num_white_territory + territory.num_white_stones)

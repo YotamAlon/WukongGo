@@ -5,19 +5,16 @@ from typing import Optional
 
 from Models.BasicTypes import Color, Move, Point
 from Models.Board import Board
-from Models.Rule import RuleSet
-from Models.Scoring import Score
-from Models.Scoring import compute_game_result, get_territory, GameResult
+from Models.Scoring import Score, evaluate_territory, compute_game_result, GameResult
 from Models.zobrist import Hash
 
 
 class State:
-    def __init__(self, board: Board, rule_set: RuleSet, next_color: Color, score: Score,
+    def __init__(self, board: Board, next_color: Color, score: Score,
                  previous: Optional[State] = None, move: Optional[Move] = None):
         self.board = board
         self.next_color = next_color
         self.previous_state = previous
-        self.rule_set = rule_set
         self._score = score
         self.territory = None
         if self.previous_state is None:
@@ -35,11 +32,14 @@ class State:
     def apply_move(self, move: Move) -> State:
         if move.is_play:
             next_board = copy.deepcopy(self.board)
-            score = next_board.place_stone(self.next_color, move.point) + self._score
+            captured_groups = next_board.place_stone(self.next_color, move.point)
+            score = self._score
+            for group in captured_groups:
+                score = score.with_captured_group(group)
         else:
             next_board = self.board
             score = self._score
-        return State(next_board, self.rule_set, self.next_color.other, score, self, move)
+        return State(next_board, self.next_color.other, score, self, move)
 
     def change_dead_stone_marking(self, point: Point) -> list[Point]:
         # actually changes a group of stones from dead to alive and vice versa.
@@ -47,14 +47,14 @@ class State:
             group = self.board.get_group(point)
             if group is not None:
                 group.change_dead_status()
-        self.territory = get_territory(self)
+        self.territory = evaluate_territory(self.board)
         return [point for group in self.board.endgame_dead_groups for point in group.points]
 
     @classmethod
-    def new_game(cls, board_size: int, rule_set: RuleSet) -> State:
+    def new_game(cls, board_size: int, komi: Score) -> State:
         board_size = (board_size, board_size)
         board = Board(*board_size)
-        return State(board, rule_set, Color.black, rule_set.komi)
+        return State(board, Color.black, komi)
 
     def is_over(self) -> bool:
         if self.last_move is None:
@@ -69,7 +69,7 @@ class State:
 
     def get_game_result(self) -> GameResult:
         assert self.endgame_mode
-        return compute_game_result(self)
+        return compute_game_result(self.board)
 
     @property
     def situation(self) -> tuple[Color, Hash]:
@@ -85,6 +85,3 @@ class State:
             white += sum(len(group) for group in groups if group.color == Color.black)
             black += sum(len(group) for group in groups if group.color == Color.white)
         return Score(w_score=white, b_score=black)
-
-    def is_valid_move(self, move) -> bool:
-        return self.rule_set.is_valid_move(game_state=self, color=self.next_color, move=move)

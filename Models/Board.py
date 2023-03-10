@@ -4,7 +4,6 @@ from typing import Any, Iterable, Optional
 
 from Models import zobrist
 from Models.BasicTypes import Color, Point
-from Models.Scoring import Score
 
 
 class GoGroup:
@@ -58,7 +57,7 @@ class Board:
         self._grid = {}
         self._hash = zobrist.EMPTY_BOARD
 
-    def place_stone(self, color: Color, point: Point) -> Score:
+    def place_stone(self, color: Color, point: Point) -> list[GoGroup]:
         if not self.is_on_grid(point):
             raise ValueError('The provided point is not on the board!')
         if self._grid.get(point) is not None:
@@ -67,7 +66,6 @@ class Board:
         adjacent_same_color = []
         adjacent_opposite_color = []
         liberties = []
-        score = Score(0, 0)
 
         for neighbor in point.neighbors():
             if not self.is_on_grid(neighbor):
@@ -91,20 +89,22 @@ class Board:
 
         self._hash ^= zobrist.HASH_CODE[point, color]
 
+        captured_groups = []
         for other_color_group in adjacent_opposite_color:
             replacement = other_color_group.without_liberty(point)
             if replacement.num_liberties:
                 self._replace_group(other_color_group.without_liberty(point))
             else:
-                score += self._remove_group(other_color_group)
-        return score
+                captured_groups.append(other_color_group)
+                self._remove_group(other_color_group)
+
+        return captured_groups
 
     def _replace_group(self, new_group: GoGroup) -> None:
         for point in new_group.stones:
             self._grid[point] = new_group
 
-    def _remove_group(self, group: GoGroup) -> Score:
-        score = Score.from_dict(score_dict={group.color.other: len(group.stones), group.color: 0})
+    def _remove_group(self, group: GoGroup) -> None:
         for point in group.stones:
             for neighbor in point.neighbors():
                 neighbor_group = self._grid.get(neighbor)
@@ -115,7 +115,6 @@ class Board:
             self._grid[point] = None
 
             self._hash ^= zobrist.HASH_CODE[point, group.color]
-        return score
 
     def is_on_grid(self, point: Point) -> bool:
         return 1 <= point.row <= self.num_rows and \

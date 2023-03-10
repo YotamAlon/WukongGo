@@ -1,5 +1,3 @@
-
-from Models.BasicTypes import Color
 from Models.State import State
 
 

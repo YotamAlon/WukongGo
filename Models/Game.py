@@ -64,12 +64,12 @@ class Game(Model):
     def new_game(
             cls, size: int, rule_set: RuleSet, players: Dict[Color, User], timer: Timer, uuid: Optional[str] = None
     ) -> Game:
-        state = State.new_game(size, rule_set)
+        state = State.new_game(size, rule_set.komi)
         return Game(players=players, timer=timer, state=state, rule_set=rule_set, size=size, uuid=uuid)
 
     def is_legal(self, point: Point) -> bool:
         move = Move.play(point)
-        return self.state.is_valid_move(move)
+        return self.rule_set.is_valid_move(game_state=self.state, color=self.state.next_color, move=move)
 
     def make_move(self, point: Point) -> tuple[Move, Optional[GameResult]]:
         return self._make_move(Move.play(point))
