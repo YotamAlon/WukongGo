@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 from Models.BasicTypes import Color, Point
+from Models.Board import Board
+from Models.State import State
 
 
 class Score:
@@ -7,41 +11,42 @@ class Score:
         self.b_score = b_score
 
     @staticmethod
-    def from_dict(score_dict):
+    def from_dict(score_dict: dict[Color, int]) -> Score:
         w_score = score_dict[Color.white]
         b_score = score_dict[Color.black]
         return Score(w_score, b_score)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'black: {self.b_score}, white: {self.w_score}'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, other):
-        assert isinstance(other, Score)
+    def __add__(self, other) -> Score:
+        if not isinstance(other, Score):
+            raise TypeError(f"Can't add object of type {type(other)} to score")
         return Score(self.w_score + other.w_score, self.b_score + other.b_score)
 
 
 class GameResult(Score):
     @property
-    def winner(self):
+    def winner(self) -> Color:
         if self.b_score > self.w_score:
             return Color.black
         return Color.white
 
     @property
-    def winning_margin(self):
+    def winning_margin(self) -> int:
         return abs(self.b_score - self.w_score)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.b_score > self.w_score:
             return 'B+%.1f' % (self.b_score - self.w_score)
         return 'W+%.1f' % (self.w_score - self.b_score)
 
 
 class Territory:
-    def __init__(self, territory_map):  # <1>
+    def __init__(self, territory_map: dict[Point, Color | str]):  # <1>
         self.num_black_territory = 0
         self.num_white_territory = 0
         self.num_black_stones = 0
@@ -66,7 +71,7 @@ class Territory:
                 self.dame_points.append(point)
 
 
-def _get_color(board, point):
+def _get_color(board: Board, point: Point):
     color = board.get_color(point)
     if color is None:
         return None
@@ -76,7 +81,7 @@ def _get_color(board, point):
     return color
 
 
-def evaluate_territory(board):
+def evaluate_territory(board: Board) -> Territory:
     status = {}
     for r in range(1, board.num_rows + 1):
         for c in range(1, board.num_cols + 1):
@@ -99,7 +104,7 @@ def evaluate_territory(board):
     return Territory(status)
 
 
-def _collect_region(start_point, board, visited=None):
+def _collect_region(start_point: Point, board: Board, visited: set[Point] = None) -> tuple[list[Point], set[Color]]:
     if visited is None:
         visited = set()
     if start_point in visited:
@@ -122,11 +127,11 @@ def _collect_region(start_point, board, visited=None):
     return all_points, all_borders
 
 
-def get_territory(game_state):
+def get_territory(game_state: State) -> Territory:
     return evaluate_territory(game_state.board)
 
 
-def compute_game_result(game_state):
+def compute_game_result(game_state: State) -> GameResult:
     territory = evaluate_territory(game_state.board)
     return GameResult(
         b_score=territory.num_black_territory + territory.num_black_stones,

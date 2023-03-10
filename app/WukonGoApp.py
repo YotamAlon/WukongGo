@@ -1,22 +1,24 @@
+import asyncio
+from functools import wraps
+
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
-from kivy.uix.screenmanager import ScreenManager
 from kivy.properties import StringProperty
-from app.Views.Game import GameScreen
-from app.Views.Menu import MenuScreen
+from kivy.uix.screenmanager import ScreenManager
+from peewee import SqliteDatabase
+
+from Models import db_proxy
 from Models.BasicTypes import Color
-from app.Views.Settings import SettingsScreen
+from Models.BasicTypes import Point
 from Models.Game import Game
-from Models.User import User
-from Models.Timer import Timer
-from Models.BasicTypes import Point, Move
 from Models.Rule import get_japanese_rule_set
 from Models.Scoring import GameResult
-from Models import db_proxy
-from peewee import SqliteDatabase
-import asyncio
-from functools import wraps
+from Models.Timer import Timer
+from Models.User import User
+from app.Views.Game import GameScreen
+from app.Views.Menu import MenuScreen
+from app.Views.Settings import SettingsScreen
 
 
 def run_async(func):
@@ -103,9 +105,9 @@ class Controller(ScreenManager):
 
     def pass_turn(self):
         # print(f'\n{self.game.to_sgf()}\n') This is currently not working
-        result = self.game.pass_turn()
+        move, result = self.game.pass_turn()
         print("legal move: pass, current score:", result)
-        if isinstance(result, GameResult):
+        if result:
             self.get_screen('game').initiate_endgame(*self.game.get_black_white_points())
             # self.get_screen('game').show_game_finished_popup(result)
 

@@ -1,41 +1,45 @@
+from __future__ import annotations
+
 import enum
 from collections import namedtuple
+
 from peewee import Model, CharField, IntegerField
+
 from Models import db_proxy
 
 
 class Point(namedtuple('Point', 'row col')):
-    def neighbors(self):
-        return [
+    def neighbors(self) -> tuple[Point, Point, Point, Point]:
+        return (
             Point(self.row - 1, self.col),
             Point(self.row + 1, self.col),
             Point(self.row, self.col - 1),
             Point(self.row, self.col + 1)
-        ]
+        )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.row, self.col))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'({self.row}, {self.col})'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
     @staticmethod
-    def _int_to_str(num):
+    def _int_to_str(num: int) -> str:
         return chr(ord('a') + num - 1)
 
     @staticmethod
-    def _str_to_int(string):
+    def _str_to_int(string: str) -> int:
         return ord(string) - ord('a') + 1
 
     @property
-    def sgf_str(self):
+    def sgf_str(self) -> str:
         return self._int_to_str(self.col) + self._int_to_str(self.row)
 
     @staticmethod
-    def from_sgf(string):
+    def from_sgf(string: str) -> Point:
         return Point(col=Point._str_to_int(string[0]), row=Point._str_to_int(string[1]))
 
 
@@ -44,23 +48,23 @@ class Color(enum.Enum):
     white = 2
 
     @property
-    def other(self):
+    def other(self) -> Color:
         return Color.black if self == Color.white else Color.white
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self == Color.white:
             return "white"
         return "black"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
     @property
-    def sgf_str(self):
+    def sgf_str(self) -> str:
         return "W" if self == Color.white else "B"
 
     @staticmethod
-    def from_sgf(string):
+    def from_sgf(string: str) -> Color:
         if string == "W":
             return Color.white
         if string == "B":
@@ -77,7 +81,8 @@ class Move(Model):
         database = db_proxy
 
     def __init__(self, point: Point = None, is_pass: bool = False, is_resign: bool = False):
-        assert (point is not None) ^ is_pass ^ is_resign
+        if (point is None) and not is_pass and not is_resign:
+            raise Exception('Move must have a point or be a pass or a resign')
         super(Move, self).__init__()
         self.point = point
         if is_pass:
@@ -102,39 +107,39 @@ class Move(Model):
             self._col = value.col
 
     @property
-    def is_play(self):
+    def is_play(self) -> bool:
         return self._type == 'play'
 
     @property
-    def is_pass(self):
+    def is_pass(self) -> bool:
         return self._type == 'pass'
 
     @property
-    def is_resign(self):
+    def is_resign(self) -> bool:
         return self._type == 'resign'
 
     @staticmethod
-    def play(point):
+    def play(point: Point) -> Move:
         return Move(point=point, is_pass=False, is_resign=False)
 
     @staticmethod
-    def pass_turn():
+    def pass_turn() -> Move:
         return Move(point=None, is_pass=True, is_resign=False)
 
     @staticmethod
-    def resign():
+    def resign() -> Move:
         return Move(point=None, is_pass=False, is_resign=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.is_play:
             return str(self.point)
         return "pass" if self.is_pass else "resign"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
     @property
-    def sgf_str(self):
+    def sgf_str(self) -> str:
         if self.is_play:
             return self.point.sgf_str
         if self.is_pass:
@@ -143,5 +148,5 @@ class Move(Model):
             raise Exception("resign type moves shouldn't be converted to sgf")
 
     @staticmethod
-    def from_sgf(string):
+    def from_sgf(string: str) -> Move:
         return Move(Point.from_sgf(string))

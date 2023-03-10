@@ -1,6 +1,5 @@
 from .BasicTypes import Color, Point
-
-__all__ = ['HASH_CODE', 'EMPTY_BOARD']
+Hash = int
 
 HASH_CODE = {
     (Point(row=1, col=1), Color.black): 6702862465487893706,

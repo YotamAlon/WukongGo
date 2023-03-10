@@ -1,23 +1,28 @@
-from Models.Scoring import Score
+from __future__ import annotations
+
+from typing import Any, Iterable, Optional
+
 from Models import zobrist
+from Models.BasicTypes import Color, Point
+from Models.Scoring import Score
 
 
 class GoGroup:
-    def __init__(self, color, stones, liberties):
+    def __init__(self, color: Color, stones: Iterable[Point], liberties: Iterable[Point]):
         self.color = color
         self.stones = frozenset(stones)
         self.liberties = frozenset(liberties)
         self.is_dead = False  # endgame purposes
 
-    def without_liberty(self, point):
+    def without_liberty(self, point: Point) -> GoGroup:
         new_liberties = self.liberties - {point}
         return GoGroup(self.color, self.stones, new_liberties)
 
-    def with_liberty(self, point):
+    def with_liberty(self, point: Point) -> GoGroup:
         new_liberties = self.liberties | {point}
         return GoGroup(self.color, self.stones, new_liberties)
 
-    def merged_with(self, go_group):
+    def merged_with(self, go_group: GoGroup) -> GoGroup:
         assert go_group.color == self.color
         combined_stones = self.stones | go_group.stones
         return GoGroup(
@@ -25,37 +30,40 @@ class GoGroup:
             combined_stones,
             (self.liberties | go_group.liberties) - combined_stones)
 
-    def mark_dead(self):
+    def change_dead_status(self) -> None:
         self.is_dead = not self.is_dead  # again, mark_dead -> change dead marking.
 
     @property
-    def points(self):
+    def points(self) -> frozenset[Point]:
         return self.stones
 
     @property
-    def num_liberties(self):
+    def num_liberties(self) -> int:
         return len(self.liberties)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, GoGroup) and \
             self.color == other.color and \
             self.stones == other.stones and \
             self.liberties == other.liberties
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.stones)
 
 
 class Board:
-    def __init__(self, num_rows, num_cols):
+    def __init__(self, num_rows: int, num_cols: int):
         self.num_rows = num_rows
         self.num_cols = num_cols
         self._grid = {}
         self._hash = zobrist.EMPTY_BOARD
 
-    def place_stone(self, color, point):
-        assert self.is_on_grid(point)
-        assert self._grid.get(point) is None
+    def place_stone(self, color: Color, point: Point) -> Score:
+        if not self.is_on_grid(point):
+            raise ValueError('The provided point is not on the board!')
+        if self._grid.get(point) is not None:
+            raise ValueError('That spot on the board is already taken!')
+
         adjacent_same_color = []
         adjacent_opposite_color = []
         liberties = []
@@ -91,11 +99,11 @@ class Board:
                 score += self._remove_group(other_color_group)
         return score
 
-    def _replace_group(self, new_group):
+    def _replace_group(self, new_group: GoGroup) -> None:
         for point in new_group.stones:
             self._grid[point] = new_group
 
-    def _remove_group(self, group):
+    def _remove_group(self, group: GoGroup) -> Score:
         score = Score.from_dict(score_dict={group.color.other: len(group.stones), group.color: 0})
         for point in group.stones:
             for neighbor in point.neighbors():
@@ -109,30 +117,30 @@ class Board:
             self._hash ^= zobrist.HASH_CODE[point, group.color]
         return score
 
-    def is_on_grid(self, point):
+    def is_on_grid(self, point: Point) -> bool:
         return 1 <= point.row <= self.num_rows and \
             1 <= point.col <= self.num_cols
 
-    def get_color(self, point):
+    def get_color(self, point: Point) -> Optional[Color]:
         group = self._grid.get(point)
         return None if group is None else group.color
 
-    def get_group(self, point):
+    def get_group(self, point: Point) -> GoGroup:
         return self._grid.get(point)
 
     @property
-    def grid(self):
+    def grid(self) -> list[tuple[Point, Color]]:
         return [(point, self.get_color(point)) for point in self._grid]
 
     @property
-    def size(self):
+    def size(self) -> int:
         assert self.num_cols == self.num_rows
         return self.num_cols
 
     @property
-    def endgame_dead_groups(self):
+    def endgame_dead_groups(self) -> list[GoGroup]:
         return [group for group in self._grid.values() if group.is_dead]
 
     @property
-    def hash(self):
+    def hash(self) -> int:
         return self._hash

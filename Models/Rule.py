@@ -1,20 +1,26 @@
+import abc
 import copy
+import enum
+
+from Models.BasicTypes import Color, Move
 from Models.Scoring import Score
+from Models.State import State
 
 
-class Rule:
+class Rule(abc.ABC):
     def __init__(self):
         pass
 
     @staticmethod
-    def is_valid_move(game_state, color, move):
+    @abc.abstractmethod
+    def is_valid_move(game_state: State, color: Color, move: Move) -> bool:
         raise NotImplementedError
 
 
 class BasicRule(Rule):
     # should always be the first rule in any RuleSet
     @staticmethod
-    def is_valid_move(game_state, color, move):
+    def is_valid_move(game_state: State, color: Color, move: Move) -> bool:
         if not move.is_play:
             return True
         if color is None:
@@ -26,7 +32,7 @@ class BasicRule(Rule):
 
 class KoRule(Rule):
     @staticmethod
-    def is_valid_move(game_state, color, move):
+    def is_valid_move(game_state: State, color: Color, move: Move) -> bool:
         if game_state.previous_state is None:
             return True
         next_board = copy.deepcopy(game_state.board)
@@ -37,7 +43,7 @@ class KoRule(Rule):
 
 class SuperKoRule(Rule):
     @staticmethod
-    def is_valid_move(game_state, color, move):
+    def is_valid_move(game_state: State, color: Color, move: Move) -> bool:
         next_board = copy.deepcopy(game_state.board)
         next_board.place_stone(color, move.point)
         next_situation = (color.other, next_board.hash)
@@ -46,7 +52,7 @@ class SuperKoRule(Rule):
 
 class SelfCaptureRule(Rule):
     @staticmethod
-    def is_valid_move(game_state, color, move):
+    def is_valid_move(game_state: State, color: Color, move: Move) -> bool:
         next_board = copy.deepcopy(game_state.board)
         next_board.place_stone(color, move.point)
         new_group = next_board.get_group(move.point)
@@ -59,44 +65,51 @@ class RuleSet:
         self.komi = komi
         self.name = name
 
-    def is_valid_move(self, game_state, color, move):
+    def is_valid_move(self, game_state: State, color: Color, move: Move) -> bool:
         for rule in self.rules:
             if not rule.is_valid_move(game_state, color, move):
                 return False
         return True
 
 
-def get_ai_rule_set():
+def get_ai_rule_set() -> RuleSet:
     return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(w_score=7.5), name="ai")
 
 
-def get_japanese_rule_set():
+def get_japanese_rule_set() -> RuleSet:
     """
     https://senseis.xmp.net/?JapaneseRules
     """
     return RuleSet(SelfCaptureRule, KoRule, komi=Score(w_score=6.5), name="japanese")
 
 
-def get_chinese_rule_set():
+def get_chinese_rule_set() -> RuleSet:
     """
     https://senseis.xmp.net/?ChineseRules
     """
     return RuleSet(SelfCaptureRule, SuperKoRule, komi=Score(w_score=7.5), name="chinese")
 
 
-def get_ign_rule_set():
+def get_ign_rule_set() -> RuleSet:
     """
     https://senseis.xmp.net/?IngRules
     """
     return RuleSet(SuperKoRule, komi=Score(w_score=7.5), name="ign")
 
 
-def get_rule_set_by_name(name):
-    if name == "japanese":
+class RuleSetType(enum.Enum):
+    japanese = 'japanese'
+    chinese = 'chinese'
+    ign = 'ign'
+    ai = 'ai'
+
+
+def get_rule_set_by_name(rule_set_type: RuleSetType) -> RuleSet:
+    if rule_set_type == RuleSetType.japanese:
         return get_japanese_rule_set()
-    if name == "chinese":
+    if rule_set_type == RuleSetType.chinese:
         return get_chinese_rule_set()
-    if name == "ign":
+    if rule_set_type == RuleSetType.ign:
         return get_ign_rule_set()
-    if name == "ai":
+    if rule_set_type == RuleSetType.ai:
         return get_ai_rule_set()

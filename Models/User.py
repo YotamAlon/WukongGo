@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from peewee import Model, CharField
+
 from Models import db_proxy
-from typing import List
+from Models.Game import GameUser
 
 
 class User(Model):
@@ -11,7 +14,5 @@ class User(Model):
         database = db_proxy
 
     @property
-    def games(self) -> List:
-        from Models.Game import GameUser
+    def games(self) -> list[GameUser]:
         return list(GameUser.select(GameUser.game).where(GameUser.user == self))
-

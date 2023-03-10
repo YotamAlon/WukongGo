@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import functools
-
-from kivy.uix.screenmanager import Screen
-from kivy.uix.button import Button
-from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty, BooleanProperty, AliasProperty
-from kivy.uix.gridlayout import GridLayout
-from Models.BasicTypes import Point, Color
-from kivy.lang import Builder
-from app.Views.Fragments import NotifyPopup
 from kivy.graphics import Color as kColor, Rectangle, InstructionGroup, Line
+from kivy.lang import Builder
+from kivy.properties import NumericProperty, StringProperty, ObjectProperty, ListProperty, BooleanProperty
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.screenmanager import Screen
+
+from Models.BasicTypes import Point, Color
+from app.Views.Fragments import NotifyPopup
 
 
 class Piece(Button):
