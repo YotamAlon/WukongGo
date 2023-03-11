@@ -19,6 +19,7 @@ from Models.User import User
 from app.Views.Game import GameScreen, GameMode
 from app.Views.Menu import MenuScreen
 from app.Views.Settings import SettingsScreen
+from app.dispatcher import Dispatcher
 
 
 def run_async(func):
@@ -152,6 +153,7 @@ class Controller(ScreenManager):
 
 class WukonGoApp(App):
     controller = Controller()
+    dispatcher = Dispatcher
 
     def build(self):
         Window.size = (400, 600)
