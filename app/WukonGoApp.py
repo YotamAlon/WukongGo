@@ -18,6 +18,7 @@ from Models.Timer import Timer
 from Models.User import User
 from app.Views.Game import GameScreen, GameMode
 from app.Views.Menu import MenuScreen
+from app.Views.Replay import ReplayScreen
 from app.Views.Settings import SettingsScreen
 from app.dispatcher import Dispatcher
 
@@ -58,9 +59,11 @@ class Controller(ScreenManager):
         self.initialize_db()
 
         # self.api.connect()
+        Dispatcher.subscribe_to_event('navigate', self.navigate)
 
         self.add_widget(MenuScreen(name='menu'))
         self.add_widget(GameScreen(name='game'))
+        self.add_widget(ReplayScreen(name='replay'))
         self.add_widget(SettingsScreen(name='settings'))
 
         self.switch_to(self.get_screen('menu'))
@@ -124,23 +127,29 @@ class Controller(ScreenManager):
     # def receive_move(move_sgf):
     #     print(Move.from_sgf(move_sgf))
 
-    def navigate(self, signal, **kwargs):
+    def navigate(self, destination, **kwargs):
         self.transition.duration = 0.4
-        if signal == 'game':
+        if destination == 'game':
             board_size = kwargs['board_size']
             game = self.start_new_game(board_size)
             self.get_screen('game').initialize(game)
             self.transition.direction = 'down'
             self.current = 'game'
 
-        elif signal == 'menu':
+        elif destination == 'replay':
+            game = Game.get()
+            self.get_screen('replay').initialize(game)
+            self.transition.direction = 'down'
+            self.current = 'replay'
+
+        elif destination == 'menu':
             if self.current == 'game':
                 self.transition.direction = 'up'
             elif self.current == 'settings':
                 self.transition.direction = 'down'
             self.current = 'menu'
 
-        elif signal == 'settings':
+        elif destination == 'settings':
             self.transition.direction = 'up'
             self.current = 'settings'
 

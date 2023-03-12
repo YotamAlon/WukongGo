@@ -11,7 +11,7 @@ from Models.zobrist import Hash
 
 class State:
     def __init__(self, board: Board, next_color: Color, score: Score,
-                 previous: Optional[State] = None, move: Optional[Move] = None):
+                 previous: Optional[State] = None, move: Optional[Move] = None, next: Optional[State] = None):
         self.board = board
         self.next_color = next_color
         self.previous_state = previous
@@ -23,6 +23,7 @@ class State:
             self.previous_states = frozenset(
                 previous.previous_states |
                 {(previous.next_color, previous.board.hash)})
+        self.next_state = next
 
         self.last_move = move
 

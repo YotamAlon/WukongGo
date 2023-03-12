@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Dict, List, Optional
 
-from peewee import Model, ForeignKeyField, IntegerField, CharField, FloatField
+from peewee import Model, ForeignKeyField, IntegerField, CharField, FloatField, TextField
 
 from Models import db_proxy
 from Models.BasicTypes import Move, Point, Color
@@ -22,9 +22,14 @@ class Game(Model):
     size = IntegerField()
     rule_set_name = CharField()
     komi = FloatField()
+    _sgf = TextField()
 
     class Meta:
         database = db_proxy
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not hasattr(self, 'state'):
 
     def save(self, **kwargs):
         if self.uuid is None:
@@ -75,7 +80,7 @@ class Game(Model):
         return self._make_move(Move.play(point))
 
     def _make_move(self, move: Move) -> tuple[Move, Optional[GameResult]]:
-        move.save()
+
         GameMove(move=move, game=self).save()
         self.state = self.state.apply_move(move)
         if self.state.is_over():
@@ -92,6 +97,14 @@ class Game(Model):
         return SGF(self)
 
     @property
+    def sgf(self) -> SGF:
+        return SGF.from_string(self._sgf)
+
+    @sgf.setter
+    def sgf(self, value: SGF) -> None:
+        self._sgf = str(value)
+
+    @property
     def sgf_str(self) -> str:
         return str(self.to_sgf())
 
@@ -105,7 +118,7 @@ class Game(Model):
         game = Game.new_game(int(size), rules, players, Timer(), uuid=uuid)
 
         for move in sgf.moves:
-            game.make_move(Move.from_sgf(move[game.state.next_color.sgf_str]))
+            game.make_move(Move.from_sgf(move[game.state.next_color.sgf_str]).point)
         return game
 
     @staticmethod

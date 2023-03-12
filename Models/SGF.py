@@ -87,6 +87,9 @@ class SGF:
     def moves(self):
         return self.nodes[1:]
 
+    def add_move(self, state: State):
+        self.nodes += self.state_to_sgf_dict(state)
+
     def __str__(self):
         string = "("
         for node in self.nodes:

@@ -9,7 +9,8 @@
             source: 'assets/images/sakura.jpg'
     BoxLayout:
         orientation: 'vertical'
-        size_hint_y: 0.5
+        size_hint_y: None
+        height: 300
         pos_hint: {"center_x": 0.5, "center_y": 0.5}
         Label:
             text: 'WukonGo'
@@ -24,13 +25,18 @@
             orientation: 'vertical'
             size_hint_x: 0.5
             size_hint_y: None
+            height: 150
             pos_hint: {"center_x": 0.5}
             Button:
                 background_color: 0, 0, 0, 1
                 text: 'New game'
                 on_release: self.popup.open()
-                popup: BoardSizeChoicePopup(callback=lambda s: app.controller.navigate('game', board_size=s))
+                popup: BoardSizeChoicePopup(callback=lambda s: app.dispatcher.publish_event('navigate', destination='game', board_size=s))
+            Button:
+                background_color: 0, 0, 0, 1
+                text: 'Replay'
+                on_release: app.dispatcher.publish_event('navigate', destination='replay')
             Button:
                 background_color: 0, 0, 0, 1
                 text: 'Settings'
-                on_release: app.controller.navigate('settings')
+                on_release: app.dispatcher.publish_event('navigate', destination='settings')

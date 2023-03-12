@@ -1,0 +1,60 @@
+#:import ConfirmPopup app.Views.Fragments.ConfirmPopup
+#:import GameBoard app.Views.Board.GameBoard
+
+
+<ReplayScreen>:
+    board_container: board_container
+    score_board: score_board_id
+    player_1_label: player_1_label_id
+    player_2_label: player_2_label_id
+    canvas.before:
+        Rectangle:
+            pos: -2500, -1200
+            size: 3184, 2546
+            source: 'assets/images/sakura.jpg'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+            Label:
+                id: player_1_label_id
+                text: app.controller.black_name
+                outline_color: 0, 0, 0, 0.8
+                outline_width: 1
+            Label:
+                id: score_board_id
+                text: root.score
+                outline_color: 0, 0, 0, 0.8
+                outline_width: 1
+            Label:
+                id: player_2_label_id
+                text: app.controller.white_name
+                outline_color: 0, 0, 0, 0.8
+                outline_width: 1
+        BoxLayout:
+            RelativeLayout:
+                id: board_container
+                size_hint: None, None
+                size: min(self.parent.size), min(self.parent.size)
+                pos: self.parent.pos[0] + ((self.parent.size[0] - self.size[0]) / 2), self.pos[1]
+                pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Go back to menu'
+                on_release: app.dispatcher.publish_event('navigate', destination='menu')
+                background_color: 0, 0, 0, 1
+            Button:
+                text: 'Previous'
+                on_release: app.dispatcher.publish_event('replay_previous')
+                background_color: 0, 0, 0, 1
+                disabled: root.game_state.previous_state
+            Button:
+                text: 'Next'
+                on_release: app.dispatcher.publish_event('replay_next')
+                background_color: 0, 0, 0, 1
+                disabled: root.game_state.next_state

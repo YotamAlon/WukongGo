@@ -1,11 +1,9 @@
 from __future__ import annotations
 
+import dataclasses
 import enum
 from collections import namedtuple
-
-from peewee import Model, CharField, IntegerField
-
-from Models import db_proxy
+from typing import Optional
 
 
 class Point(namedtuple('Point', 'row col')):
@@ -72,13 +70,17 @@ class Color(enum.Enum):
         raise Exception("Color sgf string should be W or B")
 
 
-class Move(Model):
-    _row = IntegerField(null=True)
-    _col = IntegerField(null=True)
-    _type = CharField()
+class MoveType(enum.Enum):
+    Pass = 'pass'
+    Resign = 'resign'
+    Play = 'play'
 
-    class Meta:
-        database = db_proxy
+
+@dataclasses.dataclass
+class Move:
+    _row: Optional[int]
+    _col: Optional[int]
+    _type: MoveType
 
     def __init__(self, point: Point = None, is_pass: bool = False, is_resign: bool = False):
         if (point is None) and not is_pass and not is_resign:
@@ -86,14 +88,14 @@ class Move(Model):
         super(Move, self).__init__()
         self.point = point
         if is_pass:
-            self._type = 'pass'
+            self._type = MoveType.Pass
         elif is_resign:
-            self._type = 'resign'
+            self._type = MoveType.Resign
         else:
-            self._type = 'play'
+            self._type = MoveType.Play
 
     @property
-    def point(self) -> Point:
+    def point(self) -> Optional[Point]:
         if self._row is None and self._col is None:
             return None
         return Point(self._row, self._col)
@@ -108,15 +110,15 @@ class Move(Model):
 
     @property
     def is_play(self) -> bool:
-        return self._type == 'play'
+        return self._type is MoveType.Play
 
     @property
     def is_pass(self) -> bool:
-        return self._type == 'pass'
+        return self._type is MoveType.Pass
 
     @property
     def is_resign(self) -> bool:
-        return self._type == 'resign'
+        return self._type is MoveType.Resign
 
     @staticmethod
     def play(point: Point) -> Move:

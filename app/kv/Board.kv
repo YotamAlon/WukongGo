@@ -1,0 +1,21 @@
+
+<Piece>:
+    on_press: app.controller.process_move(self.index)
+    background_color: 0, 0, 0, 0
+    Image:
+        source: 'assets/images/' + root.color + '.png'
+        pos: root.pos
+        size: root.size
+        opacity: 0.5 if root.is_dead else 1
+
+
+<GameBoard>:
+    canvas:
+        BorderImage:
+            source: 'assets/images/board.png'
+            pos: self.pos
+            size: self.size
+
+    cols: root.board_size
+    rows: root.board_size
+    orientation: 'lr-tb'
