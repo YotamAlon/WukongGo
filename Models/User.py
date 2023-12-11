@@ -1,13 +1,8 @@
-from __future__ import annotations
-
-from peewee import Model, CharField
-
-from Models import db_proxy
+import dataclasses
+import uuid
 
 
-class User(Model):
-    token = CharField(unique=True)
-    display_name = CharField()
-
-    class Meta:
-        database = db_proxy
+@dataclasses.dataclass
+class User:
+    display_name: str
+    token: uuid.UUID = dataclasses.field(default_factory=uuid.uuid4)

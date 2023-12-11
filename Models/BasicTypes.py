@@ -2,43 +2,44 @@ from __future__ import annotations
 
 import dataclasses
 import enum
+import typing
 from collections import namedtuple
 from typing import Optional
 
 
-class Point(namedtuple('Point', 'row col')):
-    def neighbors(self) -> tuple[Point, Point, Point, Point]:
+class Point(namedtuple("Point", "row col")):
+    def neighbors(self) -> tuple[typing.Self, typing.Self, typing.Self, typing.Self]:
         return (
             Point(self.row - 1, self.col),
             Point(self.row + 1, self.col),
             Point(self.row, self.col - 1),
-            Point(self.row, self.col + 1)
+            Point(self.row, self.col + 1),
         )
 
     def __hash__(self) -> int:
         return hash((self.row, self.col))
 
     def __str__(self) -> str:
-        return f'({self.row}, {self.col})'
+        return f"({self.row}, {self.col})"
 
     def __repr__(self) -> str:
         return self.__str__()
 
     @staticmethod
     def _int_to_str(num: int) -> str:
-        return chr(ord('a') + num - 1)
+        return chr(ord("a") + num - 1)
 
     @staticmethod
     def _str_to_int(string: str) -> int:
-        return ord(string) - ord('a') + 1
+        return ord(string) - ord("a") + 1
 
     @property
     def sgf_str(self) -> str:
         return self._int_to_str(self.col) + self._int_to_str(self.row)
 
-    @staticmethod
-    def from_sgf(string: str) -> Point:
-        return Point(col=Point._str_to_int(string[0]), row=Point._str_to_int(string[1]))
+    @classmethod
+    def from_sgf(cls, string: str) -> typing.Self:
+        return cls(col=Point._str_to_int(string[0]), row=Point._str_to_int(string[1]))
 
 
 class Color(enum.Enum):
@@ -46,7 +47,7 @@ class Color(enum.Enum):
     white = 2
 
     @property
-    def other(self) -> Color:
+    def other(self) -> typing.Self:
         return Color.black if self == Color.white else Color.white
 
     def __str__(self) -> str:
@@ -61,8 +62,8 @@ class Color(enum.Enum):
     def sgf_str(self) -> str:
         return "W" if self == Color.white else "B"
 
-    @staticmethod
-    def from_sgf(string: str) -> Color:
+    @classmethod
+    def from_sgf(cls, string: str) -> typing.Self:
         if string == "W":
             return Color.white
         if string == "B":
@@ -71,9 +72,9 @@ class Color(enum.Enum):
 
 
 class MoveType(enum.Enum):
-    Pass = 'pass'
-    Resign = 'resign'
-    Play = 'play'
+    Pass = "pass"
+    Resign = "resign"
+    Play = "play"
 
 
 @dataclasses.dataclass
@@ -84,7 +85,7 @@ class Move:
 
     def __init__(self, point: Point = None, is_pass: bool = False, is_resign: bool = False):
         if (point is None) and not is_pass and not is_resign:
-            raise Exception('Move must have a point or be a pass or a resign')
+            raise Exception("Move must have a point or be a pass or a resign")
         super(Move, self).__init__()
         self.point = point
         if is_pass:
@@ -120,17 +121,17 @@ class Move:
     def is_resign(self) -> bool:
         return self._type is MoveType.Resign
 
-    @staticmethod
-    def play(point: Point) -> Move:
-        return Move(point=point, is_pass=False, is_resign=False)
+    @classmethod
+    def play(cls, point: Point) -> typing.Self:
+        return cls(point=point, is_pass=False, is_resign=False)
 
-    @staticmethod
-    def pass_turn() -> Move:
-        return Move(point=None, is_pass=True, is_resign=False)
+    @classmethod
+    def pass_turn(cls) -> typing.Self:
+        return cls(point=None, is_pass=True, is_resign=False)
 
-    @staticmethod
-    def resign() -> Move:
-        return Move(point=None, is_pass=False, is_resign=True)
+    @classmethod
+    def resign(cls) -> typing.Self:
+        return cls(point=None, is_pass=False, is_resign=True)
 
     def __str__(self) -> str:
         if self.is_play:
@@ -149,6 +150,6 @@ class Move:
         if self.is_resign:
             raise Exception("resign type moves shouldn't be converted to sgf")
 
-    @staticmethod
-    def from_sgf(string: str) -> Move:
-        return Move(Point.from_sgf(string))
+    @classmethod
+    def from_sgf(cls, string: str) -> typing.Self:
+        return cls(Point.from_sgf(string))

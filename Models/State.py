@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import typing
 from typing import Optional
 
 from Models.BasicTypes import Color, Move, Point
@@ -10,8 +11,15 @@ from Models.zobrist import Hash
 
 
 class State:
-    def __init__(self, board: Board, next_color: Color, score: Score,
-                 previous: Optional[State] = None, move: Optional[Move] = None, next: Optional[State] = None):
+    def __init__(
+        self,
+        board: Board,
+        next_color: Color,
+        score: Score,
+        previous: Optional[State] = None,
+        move: Optional[Move] = None,
+        next: Optional[State] = None,
+    ):
         self.board = board
         self.next_color = next_color
         self.previous_state = previous
@@ -20,15 +28,21 @@ class State:
         if self.previous_state is None:
             self.previous_states = frozenset()
         else:
-            self.previous_states = frozenset(
-                previous.previous_states |
-                {(previous.next_color, previous.board.hash)})
+            self.previous_states = frozenset(previous.previous_states | {(previous.next_color, previous.board.hash)})
         self.next_state = next
 
         self.last_move = move
 
         self.endgame_mode = False
         self.dead_groups = None
+
+    @classmethod
+    def from_moves(cls, board_size: int, komi: Score, moves: list[Move]) -> typing.Self:
+        state = cls.new_game(board_size=board_size, komi=komi)
+        for move in moves:
+            state = state.apply_move(move)
+
+        return state
 
     def apply_move(self, move: Move) -> State:
         if move.is_play:
@@ -42,7 +56,7 @@ class State:
             score = self._score
         return State(next_board, self.next_color.other, score, self, move)
 
-    def change_dead_stone_marking(self, point: Point) -> list[Point]:
+    def change_dead_stone_marking(self, point: Point | None) -> list[Point]:
         # actually changes a group of stones from dead to alive and vice versa.
         if point is not None:
             group = self.board.get_group(point)

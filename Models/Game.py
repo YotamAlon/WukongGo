@@ -1,7 +1,5 @@
-from __future__ import annotations
-
+import typing
 import uuid
-from typing import Dict, List, Optional
 
 from peewee import Model, ForeignKeyField, IntegerField, CharField, FloatField, TextField
 
@@ -39,11 +37,11 @@ class Game(Model):
         GameUser(game=self, user=self.white).save()
 
     @property
-    def players(self) -> Dict[Color, User]:
+    def players(self) -> dict[Color, User]:
         return {Color.black: self.black, Color.white: self.white}
 
     @players.setter
-    def players(self, value: Dict[Color, User]) -> None:
+    def players(self, value: dict[Color, User]) -> None:
         self.black = value[Color.black]
         self.white = value[Color.white]
 
@@ -57,8 +55,8 @@ class Game(Model):
         self.komi = value.komi.w_score
 
     @property
-    def users(self) -> List[User]:
-        return list(GameUser.select(GameUser.user).where(GameUser.game == self))
+    def users(self) -> list[User]:
+        return [self.black, self.white]
 
     # This should probably not be used, but it's here as an example
     # @users.setter
@@ -67,16 +65,30 @@ class Game(Model):
 
     @classmethod
     def new_game(
-            cls, size: int, rule_set: RuleSet, players: Dict[Color, User], timer: Timer, uuid: Optional[str] = None
-    ) -> Game:
+        cls,
+        size: int,
+        rule_set: RuleSet,
+        players: dict[Color, User],
+        timer: Timer,
+        uuid: str | None = None,
+    ) -> typing.Self:
         state = State.new_game(size, rule_set.komi)
-        return Game(players=players, timer=timer, state=state, rule_set=rule_set, size=size, uuid=uuid)
+        return Game(
+            black=players[Color.black],
+            white=players[Color.white],
+            state=state,
+            timer=timer,
+            rule_set=rule_set,
+            size=size,
+            uuid=uuid,
+            komi=rule_set.komi,
+        )
 
     def is_legal(self, point: Point) -> bool:
         move = Move.play(point)
         return self.rule_set.is_valid_move(game_state=self.state, color=self.state.next_color, move=move)
 
-    def make_move(self, point: Point) -> tuple[Move, Optional[GameResult]]:
+    def make_move(self, point: Point) -> tuple[Move, GameResult | None]:
         return self._make_move(Move.play(point))
 
     def _make_move(self, move: Move) -> tuple[Move, Optional[GameResult]]:
@@ -87,10 +99,10 @@ class Game(Model):
             return move, self.state.get_game_result()
         return move, None
 
-    def pass_turn(self) -> tuple[Move, Optional[GameResult]]:
+    def pass_turn(self) -> tuple[Move, GameResult | None]:
         return self._make_move(Move.pass_turn())
 
-    def resign(self) -> tuple[Move, Optional[GameResult]]:
+    def resign(self) -> tuple[Move, GameResult | None]:
         return self._make_move(Move.resign())
 
     def to_sgf(self) -> SGF:
@@ -108,23 +120,25 @@ class Game(Model):
     def sgf_str(self) -> str:
         return str(self.to_sgf())
 
-    @staticmethod
-    def _from_sgf(sgf: SGF) -> Game:
-        uuid = sgf.header.get('UD', None)
-        size = sgf.header['SZ']
-        rules = get_rule_set_by_name(RuleSetType(sgf.header['RU']))
-        players = {Color.black: User.get_or_create(display_name=sgf.header['BP'], defaults={'token': '1'})[0],
-                   Color.white: User.get_or_create(display_name=sgf.header['WP'], defaults={'token': '2'})[0]}
-        game = Game.new_game(int(size), rules, players, Timer(), uuid=uuid)
+    @classmethod
+    def _from_sgf(cls, sgf: SGF) -> typing.Self:
+        uuid = sgf.header.get("UD", None)
+        size = sgf.header["SZ"]
+        rules = get_rule_set_by_name(RuleSetType(sgf.header["RU"]))
+        players = {
+            Color.black: User.get_or_create(display_name=sgf.header["BP"], defaults={"token": "1"})[0],
+            Color.white: User.get_or_create(display_name=sgf.header["WP"], defaults={"token": "2"})[0],
+        }
+        game = cls.new_game(int(size), rules, players, Timer(), uuid=uuid)
 
         for move in sgf.moves:
             game.make_move(Move.from_sgf(move[game.state.next_color.sgf_str]).point)
         return game
 
-    @staticmethod
-    def from_sgf(sgf_string: str) -> Game:
+    @classmethod
+    def from_sgf(cls, sgf_string: str) -> typing.Self:
         sgf = SGF.from_string(sgf_string)
-        return Game._from_sgf(sgf)
+        return cls._from_sgf(sgf)
 
     @property
     def score(self) -> Score:
@@ -136,26 +150,11 @@ class Game(Model):
 
     def get_black_white_points(self) -> tuple[set[Point], set[Point]]:
         self.state.change_dead_stone_marking(None)
-        return self.state.territory.black_territory, self.state.territory.white_territory
+        return (
+            self.state.territory.black_territory,
+            self.state.territory.white_territory,
+        )
 
-    def mark_dead_stone(self, point: Point) -> List[Point]:
+    def mark_dead_stone(self, point: Point) -> list[Point]:
         # actually changes a group of stones from dead to alive and vice versa.
         return self.state.change_dead_stone_marking(point)
-
-
-class GameUser(Model):
-    game = ForeignKeyField(Game)
-    user = ForeignKeyField(User)
-
-    class Meta:
-        database = db_proxy
-        indexes = ((('game', 'user'), True), )
-
-
-class GameMove(Model):
-    game = ForeignKeyField(Game)
-    move = ForeignKeyField(Move)
-
-    class Meta:
-        database = db_proxy
-        indexes = ((('game', 'move'), True), )

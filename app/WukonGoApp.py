@@ -6,9 +6,7 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager
-from peewee import SqliteDatabase
 
-from Models import db_proxy
 from Models.BasicTypes import Color
 from Models.BasicTypes import Point
 from Models.Game import Game
@@ -52,12 +50,10 @@ def run_async(func):
 class Controller(ScreenManager):
     game = None
     # api = API()
-    black_name = StringProperty('Black')
-    white_name = StringProperty('White')
+    black_name = StringProperty("Black")
+    white_name = StringProperty("White")
 
     async def initialize(self):
-        self.initialize_db()
-
         # self.api.connect()
         Dispatcher.subscribe_to_event('navigate', self.navigate)
 
@@ -66,26 +62,19 @@ class Controller(ScreenManager):
         self.add_widget(ReplayScreen(name='replay'))
         self.add_widget(SettingsScreen(name='settings'))
 
-        self.switch_to(self.get_screen('menu'))
-
-    @staticmethod
-    def initialize_db():
-        db = SqliteDatabase('wukongo.db')
-        db_proxy.initialize(db)
+        self.switch_to(self.get_screen("menu"))
 
     def start_new_game(self, board_size: int):
-        users = [User.get_or_create(display_name=self.black_name, defaults={'token': '1'})[0],
-                 User.get_or_create(display_name=self.white_name, defaults={'token': '2'})[0]]
+        users = [User(display_name=self.black_name), User(display_name=self.white_name)]
         timer = Timer()
         players = {Color.black: users[0], Color.white: users[1]}
         self.game = Game.new_game(size=board_size, rule_set=get_japanese_rule_set(), players=players, timer=timer)
-        self.game.save()
         # self.api.start_game(self.game)
         return self.game
 
     def process_move(self, index):
         point = Point(*index)
-        game_screen = self.get_screen('game')
+        game_screen = self.get_screen("game")
         if game_screen.mode == GameMode.play:
             if self.game.is_legal(point):
                 move, result = self.game.make_move(point=point)
@@ -112,15 +101,15 @@ class Controller(ScreenManager):
         move, result = self.game.pass_turn()
         print("legal move: pass, current score:", result)
         if result:
-            self.get_screen('game').initiate_endgame(*self.game.get_black_white_points())
+            self.get_screen("game").initiate_endgame(*self.game.get_black_white_points())
             # self.get_screen('game').show_game_finished_popup(result)
 
     def resign(self, did_resign: bool):
         if not did_resign:
             return
         result = self.game.resign()
-        self.get_screen('game').show_game_finished_popup(result)
-        print('you have resigned')
+        self.get_screen("game").show_game_finished_popup(result)
+        print("you have resigned")
 
     # @staticmethod
     # @api.event
@@ -132,9 +121,9 @@ class Controller(ScreenManager):
         if destination == 'game':
             board_size = kwargs['board_size']
             game = self.start_new_game(board_size)
-            self.get_screen('game').initialize(game)
-            self.transition.direction = 'down'
-            self.current = 'game'
+            self.get_screen("game").initialize(game)
+            self.transition.direction = "down"
+            self.current = "game"
 
         elif destination == 'replay':
             game = Game.get()
@@ -155,9 +144,9 @@ class Controller(ScreenManager):
 
     def change_player_name(self, player_id, name):
         if player_id == 0:
-            self.get_screen('game').player_1_label.text = name
+            self.get_screen("game").player_1_label.text = name
         else:
-            self.get_screen('game').player_2_label.text = name
+            self.get_screen("game").player_2_label.text = name
 
 
 class WukonGoApp(App):
@@ -174,6 +163,6 @@ class WukonGoApp(App):
 
 
 if __name__ == "__main__":
-    Clock.init_async_lib('asyncio')
+    Clock.init_async_lib("asyncio")
     app = WukonGoApp()
     asyncio.run(app.run())

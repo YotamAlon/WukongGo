@@ -1,2 +1,3 @@
-kivy==2.1.0
-peewee==3.16.0
+fastapi
+uvicorn
+tinydb~=4.8.0
