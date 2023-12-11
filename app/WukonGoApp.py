@@ -55,12 +55,12 @@ class Controller(ScreenManager):
 
     async def initialize(self):
         # self.api.connect()
-        Dispatcher.subscribe_to_event('navigate', self.navigate)
+        Dispatcher.subscribe_to_event("navigate", self.navigate)
 
-        self.add_widget(MenuScreen(name='menu'))
-        self.add_widget(GameScreen(name='game'))
-        self.add_widget(ReplayScreen(name='replay'))
-        self.add_widget(SettingsScreen(name='settings'))
+        self.add_widget(MenuScreen(name="menu"))
+        self.add_widget(GameScreen(name="game"))
+        self.add_widget(ReplayScreen(name="replay"))
+        self.add_widget(SettingsScreen(name="settings"))
 
         self.switch_to(self.get_screen("menu"))
 
@@ -118,29 +118,29 @@ class Controller(ScreenManager):
 
     def navigate(self, destination, **kwargs):
         self.transition.duration = 0.4
-        if destination == 'game':
-            board_size = kwargs['board_size']
+        if destination == "game":
+            board_size = kwargs["board_size"]
             game = self.start_new_game(board_size)
             self.get_screen("game").initialize(game)
             self.transition.direction = "down"
             self.current = "game"
 
-        elif destination == 'replay':
+        elif destination == "replay":
             game = Game.get()
-            self.get_screen('replay').initialize(game)
-            self.transition.direction = 'down'
-            self.current = 'replay'
+            self.get_screen("replay").initialize(game)
+            self.transition.direction = "down"
+            self.current = "replay"
 
-        elif destination == 'menu':
-            if self.current == 'game':
-                self.transition.direction = 'up'
-            elif self.current == 'settings':
-                self.transition.direction = 'down'
-            self.current = 'menu'
+        elif destination == "menu":
+            if self.current == "game":
+                self.transition.direction = "up"
+            elif self.current == "settings":
+                self.transition.direction = "down"
+            self.current = "menu"
 
-        elif destination == 'settings':
-            self.transition.direction = 'up'
-            self.current = 'settings'
+        elif destination == "settings":
+            self.transition.direction = "up"
+            self.current = "settings"
 
     def change_player_name(self, player_id, name):
         if player_id == 0:

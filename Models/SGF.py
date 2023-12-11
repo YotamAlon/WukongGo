@@ -6,6 +6,7 @@ class SGF:
         if game is not None:
             self.nodes = []
             from Models.Game import Game
+
             assert isinstance(game, Game)
             state = game.state
             while state.previous_state is not None:
@@ -20,16 +21,17 @@ class SGF:
     @staticmethod
     def header_from_game(game):
         from Models.Game import Game
+
         assert isinstance(game, Game)
         header = {
-            'FF': 4,  # FF[4] means SGF version 4.
-            'GM': 1,  # GM[1] means that the game is "go"
-            'SZ': game.size,
-            'BP': game.black.display_name,
-            'WP': game.white.display_name,
-            'RU': game.state.rule_set.name,
-            'KM': game.state.rule_set.komi.w_score,
-            'UD': game.uuid,
+            "FF": 4,  # FF[4] means SGF version 4.
+            "GM": 1,  # GM[1] means that the game is "go"
+            "SZ": game.size,
+            "BP": game.black.display_name,
+            "WP": game.white.display_name,
+            "RU": game.rule_set.name,
+            "KM": game.rule_set.komi.w_score,
+            "UD": str(game.id),
         }
 
         return header
@@ -95,7 +97,7 @@ class SGF:
         for node in self.nodes:
             string += "\n;"
             for key in node:
-                string += f'{key}[{node[key]}]'
+                string += f"{key}[{node[key]}]"
         string += "\n)"
         return string
 

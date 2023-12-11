@@ -1,9 +1,7 @@
+import dataclasses
 import typing
 import uuid
 
-from peewee import Model, ForeignKeyField, IntegerField, CharField, FloatField, TextField
-
-from Models import db_proxy
 from Models.BasicTypes import Move, Point, Color
 from Models.Rule import get_rule_set_by_name, RuleSet, RuleSetType
 from Models.SGF import SGF
@@ -13,28 +11,16 @@ from Models.Timer import Timer
 from Models.User import User
 
 
-class Game(Model):
-    uuid = CharField()
-    black = ForeignKeyField(User)
-    white = ForeignKeyField(User)
-    size = IntegerField()
-    rule_set_name = CharField()
-    komi = FloatField()
-    _sgf = TextField()
-
-    class Meta:
-        database = db_proxy
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not hasattr(self, 'state'):
-
-    def save(self, **kwargs):
-        if self.uuid is None:
-            self.uuid = str(uuid.uuid4())
-        super(Game, self).save(**kwargs)
-        GameUser(game=self, user=self.black).save()
-        GameUser(game=self, user=self.white).save()
+@dataclasses.dataclass
+class Game:
+    black: User
+    white: User
+    size: int
+    rule_set: RuleSet
+    state: State
+    timer: Timer
+    komi: float
+    id: uuid.UUID = dataclasses.field(default_factory=uuid.uuid4)
 
     @property
     def players(self) -> dict[Color, User]:
@@ -46,22 +32,8 @@ class Game(Model):
         self.white = value[Color.white]
 
     @property
-    def rule_set(self) -> RuleSet:
-        return get_rule_set_by_name(RuleSetType(self.rule_set_name))
-
-    @rule_set.setter
-    def rule_set(self, value: RuleSet) -> None:
-        self.rule_set_name = value.name
-        self.komi = value.komi.w_score
-
-    @property
     def users(self) -> list[User]:
         return [self.black, self.white]
-
-    # This should probably not be used, but it's here as an example
-    # @users.setter
-    # def users(self, value: List[User]) -> None:
-    #     GameUser.insert_many([{'game': self, 'user': user} for user in value]).on_conflict_ignore()
 
     @classmethod
     def new_game(
@@ -70,19 +42,21 @@ class Game(Model):
         rule_set: RuleSet,
         players: dict[Color, User],
         timer: Timer,
-        uuid: str | None = None,
+        id_: uuid.UUID | None = None,
     ) -> typing.Self:
         state = State.new_game(size, rule_set.komi)
-        return Game(
+        game = Game(
             black=players[Color.black],
             white=players[Color.white],
             state=state,
             timer=timer,
             rule_set=rule_set,
             size=size,
-            uuid=uuid,
             komi=rule_set.komi,
         )
+        if id_:
+            game.id = id_
+        return game
 
     def is_legal(self, point: Point) -> bool:
         move = Move.play(point)
@@ -91,9 +65,7 @@ class Game(Model):
     def make_move(self, point: Point) -> tuple[Move, GameResult | None]:
         return self._make_move(Move.play(point))
 
-    def _make_move(self, move: Move) -> tuple[Move, Optional[GameResult]]:
-
-        GameMove(move=move, game=self).save()
+    def _make_move(self, move: Move) -> tuple[Move, GameResult | None]:
         self.state = self.state.apply_move(move)
         if self.state.is_over():
             return move, self.state.get_game_result()
@@ -122,14 +94,14 @@ class Game(Model):
 
     @classmethod
     def _from_sgf(cls, sgf: SGF) -> typing.Self:
-        uuid = sgf.header.get("UD", None)
+        uuid_str = sgf.header.get("UD", None)
         size = sgf.header["SZ"]
         rules = get_rule_set_by_name(RuleSetType(sgf.header["RU"]))
         players = {
-            Color.black: User.get_or_create(display_name=sgf.header["BP"], defaults={"token": "1"})[0],
-            Color.white: User.get_or_create(display_name=sgf.header["WP"], defaults={"token": "2"})[0],
+            Color.black: User(display_name=sgf.header["BP"]),
+            Color.white: User(display_name=sgf.header["WP"]),
         }
-        game = cls.new_game(int(size), rules, players, Timer(), uuid=uuid)
+        game = cls.new_game(size=int(size), rule_set=rules, players=players, timer=Timer(), id_=uuid.UUID(uuid_str))
 
         for move in sgf.moves:
             game.make_move(Move.from_sgf(move[game.state.next_color.sgf_str]).point)

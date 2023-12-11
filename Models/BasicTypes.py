@@ -72,9 +72,9 @@ class Color(enum.Enum):
 
 
 class MoveType(enum.Enum):
-    Pass = "pass"
-    Resign = "resign"
-    Play = "play"
+    PASS = "pass"
+    RESIGN = "resign"
+    PLAY = "play"
 
 
 @dataclasses.dataclass
@@ -89,11 +89,11 @@ class Move:
         super(Move, self).__init__()
         self.point = point
         if is_pass:
-            self._type = MoveType.Pass
+            self._type = MoveType.PASS
         elif is_resign:
-            self._type = MoveType.Resign
+            self._type = MoveType.RESIGN
         else:
-            self._type = MoveType.Play
+            self._type = MoveType.PLAY
 
     @property
     def point(self) -> Optional[Point]:
@@ -111,15 +111,15 @@ class Move:
 
     @property
     def is_play(self) -> bool:
-        return self._type is MoveType.Play
+        return self._type is MoveType.PLAY
 
     @property
     def is_pass(self) -> bool:
-        return self._type is MoveType.Pass
+        return self._type is MoveType.PASS
 
     @property
     def is_resign(self) -> bool:
-        return self._type is MoveType.Resign
+        return self._type is MoveType.RESIGN
 
     @classmethod
     def play(cls, point: Point) -> typing.Self:

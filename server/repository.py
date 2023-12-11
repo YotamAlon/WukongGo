@@ -1,8 +1,10 @@
 import abc
+import os
 import uuid
 
 import tinydb
 
+import config
 from Models.Game import Game
 
 
@@ -18,7 +20,7 @@ class AbstractGameRepository(abc.ABC):
 
 class GameRepository(AbstractGameRepository):
     def __init__(self):
-        self._db = tinydb.TinyDB("wukongo_db.json")
+        self._db = tinydb.TinyDB(os.environ[config.DB_FILE_NAME])
         self._table = self._db.table("games")
 
     def get_game(self, game_id: int) -> Game:
@@ -28,6 +30,6 @@ class GameRepository(AbstractGameRepository):
         return game
 
     def save_game(self, game: Game) -> int:
-        sgf_string = game.to_sgf()
-        game_document = {"sgf_string": sgf_string, "uuid": str(game.uuid)}
-        return self._table.upsert(game_document, tinydb.Query().uuid == str(game.uuid))[0]
+        sgf = game.to_sgf()
+        game_document = {"sgf_string": str(sgf), "uuid": str(game.id)}
+        return self._table.upsert(game_document, tinydb.Query().uuid == str(game.id))[0]
