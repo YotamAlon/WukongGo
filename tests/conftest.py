@@ -10,4 +10,5 @@ load_dotenv()
 
 @pytest.fixture(autouse=True)
 def reset_db():
-    os.remove(config.DB_FILE_NAME)
+    if os.path.exists(os.environ[config.DB_FILE_NAME]):
+        os.remove(os.environ[config.DB_FILE_NAME])
