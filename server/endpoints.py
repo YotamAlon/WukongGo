@@ -28,6 +28,11 @@ def not_found_handler(request: fastapi.Request, exc: exceptions.NotFound):
     return JSONResponse(status_code=404, content={})
 
 
+@app.exception_handler(exceptions.IllegalMove)
+def not_found_handler(request: fastapi.Request, exc: exceptions.IllegalMove):
+    return JSONResponse(status_code=400, content={"msg": "Illegal Move"})
+
+
 def get_api_key(
     api_key: str = fastapi.Security(api_key_header),
 ) -> str:
@@ -81,6 +86,8 @@ class MoveSchema:
 def make_move(game_id: int, move: MoveSchema, api_key: str = fastapi.Security(get_api_key)):
     game = GameRepository().get_game(int(game_id))
     if move.type is MoveType.PLAY:
+        if not game.is_legal(Point(*move.point)):
+            raise exceptions.IllegalMove()
         game.make_move(Point(*move.point))
     elif move.type is MoveType.RESIGN:
         game.resign()
