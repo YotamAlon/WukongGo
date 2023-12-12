@@ -2,6 +2,7 @@ import dataclasses
 import os
 
 import fastapi
+from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader
 
 import config
@@ -10,6 +11,7 @@ from Models.Game import Game
 from Models.Rule import get_japanese_rule_set
 from Models.Timer import Timer
 from Models.User import User
+from server import exceptions
 from server.repository import GameRepository
 
 API_KEYS = os.environ[config.STATIC_API_KEYS].split(",")
@@ -19,6 +21,11 @@ app = fastapi.FastAPI()
 
 
 api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
+
+
+@app.exception_handler(exceptions.NotFound)
+def not_found_handler(request: fastapi.Request, exc: exceptions.NotFound):
+    return JSONResponse(status_code=404, content={})
 
 
 def get_api_key(

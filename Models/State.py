@@ -36,6 +36,10 @@ class State:
         self.endgame_mode = False
         self.dead_groups = None
 
+    @property
+    def last_color(self) -> Color:
+        return self.next_color.other
+
     @classmethod
     def from_moves(cls, board_size: int, komi: Score, moves: list[Move]) -> typing.Self:
         state = cls.new_game(board_size=board_size, komi=komi)

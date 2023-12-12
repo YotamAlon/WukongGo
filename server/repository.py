@@ -6,6 +6,7 @@ import tinydb
 
 import config
 from Models.Game import Game
+from server import exceptions
 
 
 class AbstractGameRepository(abc.ABC):
@@ -25,6 +26,8 @@ class GameRepository(AbstractGameRepository):
 
     def get_game(self, game_id: int) -> Game:
         game_document = self._table.get(doc_id=game_id)
+        if not game_document:
+            raise exceptions.NotFound()
         game = Game.from_sgf(sgf_string=game_document["sgf_string"])
         game.uuid = uuid.UUID(game_document["uuid"])
         return game

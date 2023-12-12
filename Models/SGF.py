@@ -71,7 +71,7 @@ class SGF:
     @staticmethod
     def state_to_sgf_dict(state):
         assert isinstance(state, State)
-        return {state.next_color.sgf_str: state.last_move.sgf_str}
+        return {state.last_color.sgf_str: state.last_move.sgf_str}
 
     @staticmethod
     def from_string(string):
